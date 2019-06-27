@@ -64,88 +64,44 @@ import java.io.ObjectOutput;
 /**
  * Primitive type "base64Binary" in FHIR: a sequence of bytes represented in base64
  */
-@DatatypeDef(name = "base64Binary")
-public class Base64BinaryType extends PrimitiveType<byte[]> implements IPrimitiveType<byte[]>, IBaseHasExtensions, IElement, Externalizable {
+@DatatypeDef(name="base64Binary")
+public class Base64BinaryType extends PrimitiveType<byte[]> {
 
-  private static final long serialVersionUID = 3L;
-  private byte[] myValue;
+	private static final long serialVersionUID = 3L;
 
-  /**
-   * Constructor
-   */
-  public Base64BinaryType() {
-    super();
-  }
+	/**
+	 * Constructor
+	 */
+	public Base64BinaryType() {
+		super();
+	}
 
-  public Base64BinaryType(byte[] theBytes) {
-    super();
-    setValue(theBytes);
-  }
+	public Base64BinaryType(byte[] theBytes) {
+		super();
+		setValue(theBytes);
+	}
 
-  public Base64BinaryType(String theValue) {
-    super();
-    setValueAsString(theValue);
-  }
+	public Base64BinaryType(String theValue) {
+		super();
+		setValueAsString(theValue);
+	}
 
-  protected byte[] parse(String theValue) {
-    return Base64.decodeBase64(theValue.getBytes(ca.uhn.fhir.rest.api.Constants.CHARSET_UTF8));
-  }
+	protected byte[] parse(String theValue) {
+		return Base64.decodeBase64(theValue);
+	}
 
-  protected String encode(byte[] theValue) {
-    if (theValue == null) {
-      return null;
-    }
-    return new String(Base64.encodeBase64(theValue), ca.uhn.fhir.rest.api.Constants.CHARSET_UTF8);
-  }
+	protected String encode(byte[] theValue) {
+		return Base64.encodeBase64String(theValue);
+	}
 
-  @Override
-  public Base64BinaryType copy() {
-    return new Base64BinaryType(getValue());
-  }
+	@Override
+	public Base64BinaryType copy() {
+		Base64BinaryType ret = new Base64BinaryType(getValue());
+    copyValues(ret);
+    return ret;
+	}
 
-  @Override
-  protected Type typedCopy() {
-    return null;
-  }
-
-  public String fhirType() {
-    return "base64Binary";
-  }
-
-  @Override
-  public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeObject(getValue());
-  }
-
-  @Override
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    setValue((byte[]) in.readObject());
-  }
-
-  @Override
-  public String getValueAsString() {
-    return encode(myValue);
-  }
-
-  @Override
-  public void setValueAsString(String theValue) throws IllegalArgumentException {
-    setValue(parse(theValue));
-  }
-
-  @Override
-  public byte[] getValue() {
-    return myValue;
-  }
-
-  @Override
-  public Base64BinaryType setValue(byte[] theValue) throws IllegalArgumentException {
-    myValue = theValue;
-    return this;
-  }
-
-  @Override
-  public boolean hasValue() {
-    return myValue != null && myValue.length > 0;
-  }
-
+	public String fhirType() {
+		return "base64Binary";
+	}
 }
