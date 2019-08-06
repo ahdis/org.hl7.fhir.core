@@ -8,6 +8,7 @@
 	each other. It is fine to bump the point version of this POM without affecting
 	HAPI FHIR.
 	-->
+	<groupId>ca.uhn.hapi.fhir</groupId>
 	<version>3.8.22-SNAPSHOT</version>
 
 	<properties>
