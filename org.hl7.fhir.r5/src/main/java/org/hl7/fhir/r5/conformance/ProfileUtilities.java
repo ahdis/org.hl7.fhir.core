@@ -896,10 +896,19 @@ public class ProfileUtilities extends TranslatingUtilities {
           outcome.setPath(fixedPathDest(contextPathDst, outcome.getPath(), redirector, contextPathSrc));
           if (res == null)
             res = outcome;
-          updateFromBase(outcome, currentBase);
+          
+          if (StructureDefinition.StructureDefinitionKind.LOGICAL.equals(destKind) && (!diffMatches.get(0).hasRepresentation() || diffMatches.get(0).hasRepresentation(PropertyRepresentation.XMLTEXT)) 
+              && outcome.getId()!=null && outcome.getId().endsWith("id")) {
+            outcome.getRepresentation().clear();
+            outcome.setBase(null);
+            outcome.setMin(diffMatches.get(0).getMin());
+            outcome.setMax(diffMatches.get(0).getMax());
+          } else {
+            updateFromBase(outcome, currentBase);
+          }
           if (diffMatches.get(0).hasSliceName())
             outcome.setSliceName(diffMatches.get(0).getSliceName());
-          updateFromDefinition(outcome, diffMatches.get(0), profileName, trimDifferential, url, srcSD);
+          updateFromDefinition(outcome, diffMatches.get(0), profileName, trimDifferential, url, srcSD, destKind);
           removeStatusExtensions(outcome);
 //          if (outcome.getPath().endsWith("[x]") && outcome.getType().size() == 1 && !outcome.getType().get(0).getCode().equals("*") && !diffMatches.get(0).hasSlicing()) // if the base profile allows multiple types, but the profile only allows one, rename it
 //            outcome.setPath(outcome.getPath().substring(0, outcome.getPath().length()-3)+Utilities.capitalize(outcome.getType().get(0).getCode()));
@@ -1125,7 +1134,7 @@ public class ProfileUtilities extends TranslatingUtilities {
 
             // differential - if the first one in the list has a name, we'll process it. Else we'll treat it as the base definition of the slice.
             if (!diffMatches.get(0).hasSliceName()) {
-              updateFromDefinition(outcome, diffMatches.get(0), profileName, trimDifferential, url, srcSD);
+              updateFromDefinition(outcome, diffMatches.get(0), profileName, trimDifferential, url, srcSD, destKind);
               removeStatusExtensions(outcome);
               if (!outcome.hasContentReference() && !outcome.hasType()) {
                 throw new DefinitionException("not done yet");
@@ -1486,7 +1495,7 @@ public class ProfileUtilities extends TranslatingUtilities {
               if (!outcome.getPath().startsWith(resultPathBase))
                 throw new DefinitionException("Adding wrong path");
               result.getElement().add(outcome);
-              updateFromDefinition(outcome, diffItem, profileName, trimDifferential, url, srcSD);
+              updateFromDefinition(outcome, diffItem, profileName, trimDifferential, url, srcSD, destKind);
               removeStatusExtensions(outcome);
               // --- LM Added this
               diffCursor = differential.getElement().indexOf(diffItem)+1;
@@ -2203,7 +2212,7 @@ public class ProfileUtilities extends TranslatingUtilities {
     return true;
   }
 
-  private void updateFromDefinition(ElementDefinition dest, ElementDefinition source, String pn, boolean trimDifferential, String purl, StructureDefinition srcSD) throws DefinitionException, FHIRException {
+  private void updateFromDefinition(ElementDefinition dest, ElementDefinition source, String pn, boolean trimDifferential, String purl, StructureDefinition srcSD, StructureDefinitionKind destKind) throws DefinitionException, FHIRException {
     source.setUserData(GENERATED_IN_SNAPSHOT, dest);
     // we start with a clone of the base profile ('dest') and we copy from the profile ('source')
     // over the top for anything the source has
