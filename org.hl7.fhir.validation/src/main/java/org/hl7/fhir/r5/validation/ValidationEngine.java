@@ -114,6 +114,7 @@ import org.hl7.fhir.r5.formats.FormatUtilities;
 import org.hl7.fhir.r5.formats.JsonParser;
 import org.hl7.fhir.r5.formats.RdfParser;
 import org.hl7.fhir.r5.formats.XmlParser;
+import org.hl7.fhir.r5.formats.IParser.OutputStyle;
 import org.hl7.fhir.r5.model.Base;
 import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.Coding;
@@ -1246,6 +1247,12 @@ public class ValidationEngine implements IValidatorResourceFetcher {
   
     new NarrativeGenerator("",  "", context).generate((DomainResource) res, null);
     return (DomainResource) res;
+  }
+  
+  public void convert(String source, String output) throws Exception {
+    Content cnt = loadContent(source, "validate");
+    Element e = Manager.parse(context, new ByteArrayInputStream(cnt.focus), cnt.cntType);
+    Manager.compose(context, e, new FileOutputStream(output), (output.endsWith(".json") ? FhirFormat.JSON : FhirFormat.XML), OutputStyle.PRETTY, null);
   }
   
   public StructureDefinition snapshot(String source) throws Exception {
