@@ -551,7 +551,7 @@ public class Utilities {
         a = a.substring(File.separator.length());
       
       while (a.startsWith(".."+File.separator)) {
-        String p = s.toString().substring(0, s.length()-1);
+        String p = a.toString().substring(0, a.length()-1);
         if (!p.contains(File.separator)) {
           s = new StringBuilder();
         } else {
