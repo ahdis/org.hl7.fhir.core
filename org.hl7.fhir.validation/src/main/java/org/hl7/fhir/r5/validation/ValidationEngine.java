@@ -748,7 +748,7 @@ public class ValidationEngine implements IValidatorResourceFetcher {
     if (Utilities.existsInList(ext, "ttl")) 
       return FhirFormat.TURTLE;
     if (Utilities.existsInList(ext, "map")) 
-      return FhirFormat.TEXT;
+      return FhirFormat.MAP;
     if (Utilities.existsInList(ext, "txt")) 
       return FhirFormat.TEXT;
 
@@ -934,8 +934,10 @@ public class ValidationEngine implements IValidatorResourceFetcher {
         res.cntType = FhirFormat.XML; 
       else if (t.getKey().endsWith(".ttl"))
         res.cntType = FhirFormat.TURTLE; 
-      else if (t.getKey().endsWith(".txt") || t.getKey().endsWith(".map"))
+      else if (t.getKey().endsWith(".txt"))
         res.cntType = FhirFormat.TEXT; 
+      else if (t.getKey().endsWith(".map"))
+        res.cntType = FhirFormat.MAP; 
       else
         throw new Exception("Todo: Determining resource type is not yet done");
     }
@@ -1270,7 +1272,7 @@ public class ValidationEngine implements IValidatorResourceFetcher {
   public void convert(String source, String output) throws Exception {
     Content cnt = loadContent(source, "validate");
     Element e = Manager.parse(context, new ByteArrayInputStream(cnt.focus), cnt.cntType);
-    Manager.compose(context, e, new FileOutputStream(output), (output.endsWith(".json") ? FhirFormat.JSON : FhirFormat.XML), OutputStyle.PRETTY, null);
+    Manager.compose(context, e, new FileOutputStream(output), FhirFormat.getFhirFormat(output.substring(output.lastIndexOf('.')+1)), OutputStyle.PRETTY, null);
   }
 
   public String evaluateFhirPath(String source, String expression) throws Exception {
