@@ -25,6 +25,10 @@ package org.hl7.fhir.r5.utils;
 // trace - account for which wasn't transformed in the source
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -34,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.hl7.fhir.exceptions.DefinitionException;
 import org.hl7.fhir.exceptions.FHIRException;
@@ -44,7 +49,10 @@ import org.hl7.fhir.r5.conformance.ProfileUtilities.ProfileKnowledgeProvider;
 import org.hl7.fhir.r5.context.IWorkerContext;
 import org.hl7.fhir.r5.context.IWorkerContext.ValidationResult;
 import org.hl7.fhir.r5.elementmodel.Element;
+import org.hl7.fhir.r5.elementmodel.ObjectConverter;
+import org.hl7.fhir.r5.elementmodel.ParserBase;
 import org.hl7.fhir.r5.elementmodel.Property;
+import org.hl7.fhir.r5.formats.IParser.OutputStyle;
 import org.hl7.fhir.r5.model.Base;
 import org.hl7.fhir.r5.model.BooleanType;
 import org.hl7.fhir.r5.model.CanonicalType;
@@ -71,6 +79,7 @@ import org.hl7.fhir.r5.model.ExpressionNode;
 import org.hl7.fhir.r5.model.ExpressionNode.CollectionStatus;
 import org.hl7.fhir.r5.model.IdType;
 import org.hl7.fhir.r5.model.IntegerType;
+import org.hl7.fhir.r5.model.Narrative;
 import org.hl7.fhir.r5.model.Narrative.NarrativeStatus;
 import org.hl7.fhir.r5.model.PrimitiveType;
 import org.hl7.fhir.r5.model.Reference;
@@ -126,7 +135,7 @@ import org.hl7.fhir.utilities.xhtml.XhtmlNode;
  * @author Grahame Grieve
  *
  */
-public class StructureMapUtilities {
+public class StructureMapUtilities extends ParserBase {
 
 	public class ResolvedGroup {
     public StructureMapGroupComponent target;
@@ -232,7 +241,7 @@ public class StructureMapUtilities {
   private ValidationOptions terminologyServiceOptions = new ValidationOptions(); 
 
 	public StructureMapUtilities(IWorkerContext worker, ITransformerServices services, ProfileKnowledgeProvider pkp) {
-		super();
+		super(worker);
 		this.worker = worker;
 		this.services = services;
 		this.pkp = pkp;
@@ -241,7 +250,7 @@ public class StructureMapUtilities {
 	}
 
 	public StructureMapUtilities(IWorkerContext worker, ITransformerServices services) {
-		super();
+		super(worker);
 		this.worker = worker;
 		this.services = services;
 		fpe = new FHIRPathEngine(worker);
@@ -249,7 +258,7 @@ public class StructureMapUtilities {
 	}
 
   public StructureMapUtilities(IWorkerContext worker) {
-    super();
+    super(worker);
     this.worker = worker;
     fpe = new FHIRPathEngine(worker);
     fpe.setHostServices(new FFHIRPathHostServices());
@@ -817,6 +826,8 @@ public class StructureMapUtilities {
       return ConceptMapRelationship.RELATEDTO;
 		if (token.equals("=="))
 			return ConceptMapRelationship.EQUIVALENT;
+    if (token.equals("="))
+      return ConceptMapRelationship.EQUIVALENT;
 		if (token.equals("!="))
 			return ConceptMapRelationship.NOTRELATEDTO;
 		if (token.equals("<="))
@@ -2976,6 +2987,28 @@ public class StructureMapUtilities {
 
   public void setTerminologyServiceOptions(ValidationOptions terminologyServiceOptions) {
     this.terminologyServiceOptions = terminologyServiceOptions;
+  }
+
+  @Override
+  public Element parse(InputStream stream) throws IOException, FHIRFormatError, DefinitionException, FHIRException {
+    StructureMap structureMap = parse(IOUtils.toString(stream, StandardCharsets.UTF_8), "map");
+    if (structureMap!=null) {
+      return new ObjectConverter(this.context).convert(structureMap);
+    }
+    return null;
+  }
+
+  @Override
+  public void compose(Element e, OutputStream destination, OutputStyle style, String base)
+      throws FHIRException, IOException {
+    Resource res = new ObjectConverter(this.context).convert(e);
+    if (res!=null && res instanceof StructureMap) {
+      StructureMap structureMap = (StructureMap) res;
+      String render = render(structureMap);
+      if (render!=null) {
+        destination.write(render.getBytes(StandardCharsets.UTF_8));
+      }
+    }
   }
 	
 }

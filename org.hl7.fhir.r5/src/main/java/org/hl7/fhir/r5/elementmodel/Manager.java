@@ -31,10 +31,11 @@ import org.hl7.fhir.exceptions.FHIRFormatError;
 import org.hl7.fhir.r5.context.IWorkerContext;
 import org.hl7.fhir.r5.formats.IParser.OutputStyle;
 import org.hl7.fhir.r5.model.StructureDefinition;
+import org.hl7.fhir.r5.utils.StructureMapUtilities;
 
 public class Manager {
 
-  public enum FhirFormat { XML, JSON, TURTLE, TEXT, VBAR;
+  public enum FhirFormat { XML, JSON, TURTLE, TEXT, VBAR, MAP;
 
     public String getExtension() {
       switch (this) {
@@ -46,8 +47,28 @@ public class Manager {
         return "xml";
       case TEXT:
         return "txt";
+      case MAP:
+        return "map";
       case VBAR:
         return "hl7";
+      }
+      return null;
+    }
+    
+    static public FhirFormat getFhirFormat(String extension) {
+      switch (extension) {
+      case "json":
+        return JSON;
+      case "ttl":
+        return TURTLE;
+      case "xml":
+        return XML;
+      case "txt":
+        return TEXT;
+      case "map":
+        return MAP;
+      case "hl7":
+        return VBAR;
       }
       return null;
     }
@@ -67,6 +88,7 @@ public class Manager {
     case XML : return new XmlParser(context);
     case TURTLE : return new TurtleParser(context);
     case VBAR : return new VerticalBarParser(context);
+    case MAP : return new StructureMapUtilities(context);
     case TEXT : throw new Error("Programming logic error: do not call makeParser for a text resource");
     }
     return null;
