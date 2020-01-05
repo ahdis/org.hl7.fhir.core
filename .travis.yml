@@ -25,7 +25,6 @@ deploy:
   draft: false
   on:
     repo: ahdis/org.hl7.fhir.core
-    branch: develop
     tags: true
 notifications:
   webhooks:
