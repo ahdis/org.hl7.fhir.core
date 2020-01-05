@@ -19,11 +19,11 @@ script:
 - mvn install -DskipTests
 deploy:
   provider: releases
+  edge: true
   api_key:
     secure: oon0VeiCXDmwu26RwR5CzxDjWBniFkqLkUq1xVx4+VD7/Wqqq27zIR/3D2Xp7nlBmvgOmynhtx+Qhye62Hq43pCMbTqxIYJaiiWunMsYa4yq/641lH50aMJBkG5EiKmIGO+clTSRn0xj6gavy6y5gHfLBrwhybXhDd3aixBc1PzwwACKWnpAIt6UvYSSUc+q0yfynolqdL0ZvLzc7brMyM3N65vBCbSrOgrKk6wvc4meJwofxudSJW9mQn8zLxOa8c1mo2ojjmwX0qLaRLtmWoimVhe4Dsq/evShM9fG7eVpsS/t3GARk36vd25Hf3H1sLrKV72gvTpRlkgsX4fKN7OsLPQGTzn5R73PhHdhginVQZfkNA8WJ8B6ot/kb3Wy3XwFn45AYMyC/+N87qOtIEZuJoKcBCb3IU2bo/+YCaRqrYONcL+//xmdRNNMkcFQnVwaNmI09PCtZ/4ZQBi8xlFU4sejomgD6IYQ1lL+StADBAg3v0Dy+XndGiAdzrBfBvxxBM2EUwAySDGSP43RZnFcgCDDYPEPSTEirQwpYJfSm2LR9wWIzqzVYZhNG7GpjO9cXNNHuhqe8uz/nNzARtIp4i/osPeLfO2O1w9udVAEdMD4XLsQmP2Ec8h72zK7+axhfyT+a75Nq8G2Id6S4sAIXH816V8LxpoLtnSFxbM=
   file: "/home/travis/build/ahdis/org.hl7.fhir.core/org.hl7.fhir.validation.cli/target/*.jar"
   draft: false
-  skip_cleanup: true
   on:
     repo: ahdis/org.hl7.fhir.core
     branch: develop
