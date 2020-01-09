@@ -221,7 +221,14 @@ public class StructureMapUtilities extends ParserBase {
         val.validate(appContext, valerrors, (Resource) item, url);
         boolean ok = true;
         for (ValidationMessage v : valerrors)
-          ok = ok && v.getLevel().isError();
+          ok = ok && !v.getLevel().isError();
+        return ok;
+      }
+      if (item instanceof Element) {
+        val.validate(appContext, valerrors, (Element) item, url);
+        boolean ok = true;
+        for (ValidationMessage v : valerrors)
+          ok = ok && !v.getLevel().isError();
         return ok;
       }
       throw new NotImplementedException("Not done yet (FFHIRPathHostServices.conformsToProfile), when item is element");
