@@ -625,7 +625,7 @@ public class ValidationEngine implements IValidatorResourceFetcher {
 
   private Map<String, byte[]> resolvePackage(String id, String v) throws Exception {
     NpmPackage pi = pcm.loadPackage(id, v);
-    if (pi != null && v == null)
+    if (pi != null)
       log("   ... Using version "+pi.version());
     return loadPackage(pi);
   }
@@ -729,14 +729,14 @@ public class ValidationEngine implements IValidatorResourceFetcher {
         Resource r = loadFileWithErrorChecking(version, t, fn);
         if (r != null) {
           context.cacheResource(r);
-          if (r instanceof ImplementationGuide) {
-            canonical = ((ImplementationGuide) r).getUrl();
-            if (canonical.contains("/ImplementationGuide/")) {
-              Resource r2 = r.copy();
-              ((ImplementationGuide) r2).setUrl(canonical.substring(0, canonical.indexOf("/ImplementationGuide/")));
-              context.cacheResource(r2);
-            }
-          }
+//          if (r instanceof ImplementationGuide) {
+//            canonical = ((ImplementationGuide) r).getUrl();
+//            if (canonical.contains("/ImplementationGuide/")) {
+//              Resource r2 = r.copy();
+//              ((ImplementationGuide) r2).setUrl(canonical.substring(0, canonical.indexOf("/ImplementationGuide/")));
+//              context.cacheResource(r2);
+//            }
+//          }
         }
       }
     }
