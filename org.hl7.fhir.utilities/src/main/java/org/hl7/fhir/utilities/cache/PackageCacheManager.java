@@ -748,6 +748,12 @@ public class PackageCacheManager {
         url = null;
       }
     }
+    if (url !=null) {
+      int ig = url.indexOf("ImplementationGuide");
+      if (ig>0) {
+        url = url.substring(0, ig-1);
+      }
+    }
     if (url == null) {
       throw new FHIRException("Unable to resolve package id "+id);
     }

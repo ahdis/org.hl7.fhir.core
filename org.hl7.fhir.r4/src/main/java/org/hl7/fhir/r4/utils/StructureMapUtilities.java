@@ -1504,23 +1504,24 @@ public class StructureMapUtilities {
 
   private List<StructureMap> findMatchingMaps(String value) {
     List<StructureMap> res = new ArrayList<StructureMap>();
+    Set<String> check = new HashSet<String>();
     if (value.contains("*")) {
       for (StructureMap sm : worker.listTransforms()) {
         if (urlMatches(value, sm.getUrl())) {
+          if (!check.contains(sm.getUrl())) {
             res.add(sm); 
+            check.add(sm.getUrl());
           }
         }
+      }
     } else {
       StructureMap sm = worker.getTransform(value);
-      if (sm != null)
-        res.add(sm); 
-    }
-    Set<String> check = new HashSet<String>();
-    for (StructureMap sm : res) {
-      if (check.contains(sm.getUrl()))
-        throw new Error("duplicate");
-      else
-        check.add(sm.getUrl());
+      if (sm != null) {
+        if (!check.contains(sm.getUrl())) {
+          res.add(sm); 
+          check.add(sm.getUrl());
+        }
+      }
     }
     return res;
   }
