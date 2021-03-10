@@ -703,7 +703,7 @@ public class XmlParser extends ParserBase {
           String av = child.getValue();
           if (ToolingExtensions.hasExtension(child.getProperty().getDefinition(), "http://www.healthintersections.com.au/fhir/StructureDefinition/elementdefinition-dateformat"))
             av = convertForDateFormatToExternal(ToolingExtensions.readStringExtension(child.getProperty().getDefinition(), "http://www.healthintersections.com.au/fhir/StructureDefinition/elementdefinition-dateformat"), av);
-          xml.attribute(child.getProperty().getXmlNamespace(),child.getProperty().getXmlName(), av);
+          xml.attribute(child.getProperty().getXmlName(), av);
         }
       }
       if (linkResolver != null)
