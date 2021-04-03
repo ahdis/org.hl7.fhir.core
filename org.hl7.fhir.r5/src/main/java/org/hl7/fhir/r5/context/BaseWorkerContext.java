@@ -172,7 +172,7 @@ public abstract class BaseWorkerContext extends I18nBase implements IWorkerConte
   private Set<String> unsupportedCodeSystems = new HashSet<String>(); // know that the terminology server doesn't support them
   private CanonicalResourceManager<ValueSet> valueSets = new CanonicalResourceManager<ValueSet>(false);
   private CanonicalResourceManager<ConceptMap> maps = new CanonicalResourceManager<ConceptMap>(false);
-  protected CanonicalResourceManager<StructureMap> transforms = new CanonicalResourceManager<StructureMap>(false);
+  protected CanonicalResourceManager<StructureMap> transforms = new CanonicalResourceManager<StructureMap>(true);
   private CanonicalResourceManager<StructureDefinition> structures = new CanonicalResourceManager<StructureDefinition>(false);
   private CanonicalResourceManager<Measure> measures = new CanonicalResourceManager<Measure>(false);
   private CanonicalResourceManager<Library> libraries = new CanonicalResourceManager<Library>(false);
@@ -275,6 +275,13 @@ public abstract class BaseWorkerContext extends I18nBase implements IWorkerConte
 
   public void registerResourceFromPackage(CanonicalResourceProxy r, PackageVersion packageInfo) throws FHIRException {
     synchronized (lock) {
+
+        Map<String, Resource> map = allResourcesById.get(r.getType());
+        if (map == null) {
+          map = new HashMap<String, Resource>();
+          allResourcesById.put(r.getType(), map);
+        }
+        map.put(r.getId(), r.getResource());
 
         String url = r.getUrl();
         if (!allowLoadingDuplicates && hasResource(r.getType(), url)) {
