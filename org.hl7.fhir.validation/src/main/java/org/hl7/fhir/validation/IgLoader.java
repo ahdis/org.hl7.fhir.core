@@ -32,16 +32,9 @@ import org.hl7.fhir.validation.cli.utils.Common;
 import org.hl7.fhir.validation.cli.utils.VersionSourceInformation;
 import org.w3c.dom.Document;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import com.google.gson.JsonObject;
+
+import lombok.Getter;
 
 public class IgLoader {
 
@@ -75,6 +68,13 @@ public class IgLoader {
                      boolean recursive) throws IOException, FHIRException {
     NpmPackage npm = src.matches(FilesystemPackageCacheManager.PACKAGE_VERSION_REGEX_OPT) && !new File(src).exists() ? getPackageCacheManager().loadPackage(src, null) : null;
     if (npm != null) {
+      for (String packageName : getContext().getLoadedPackages()) {
+        if (packageName.contains(npm.name())) {
+          // we can have only one version currently and if there exists already one we skip it
+          System.out.print("  Ignored: " + src +" because version " + npm.version() + " already loaded");
+          return ;
+        }
+      }
       for (String s : npm.dependencies()) {
         if (!getContext().getLoadedPackages().contains(s)) {
           if (!VersionUtilities.isCorePackage(s)) {
@@ -82,14 +82,21 @@ public class IgLoader {
           }
         }
       }
-      System.out.print("  Load " + src);
+      System.out.print("  Load via npm: " + src);
       if (!src.contains("#")) {
         System.out.print("#" + npm.version());
       }
       int count = getContext().loadFromPackage(npm, ValidatorUtils.loaderForVersion(npm.fhirVersion()));
+      ImplementationGuide ig = new ImplementationGuide();
+      ig.setName(npm.title());
+      ig.setVersion(npm.version());
+      ig.setPackageId(npm.id());
+      ig.setUrl(npm.canonical());
+      ig.setId(npm.name());
+      context.cacheResource(ig);
       System.out.println(" - " + count + " resources (" + getContext().clock().milestone() + ")");
     } else {
-      System.out.print("  Load " + src);
+      System.out.print("  Load from sourc:e" + src);
       String canonical = null;
       int count = 0;
       Map<String, byte[]> source = loadIgSource(src, recursive, true);
@@ -107,15 +114,6 @@ public class IgLoader {
           if (r != null) {
             count++;
             getContext().cacheResource(r);
-            if (r instanceof ImplementationGuide) {
-              canonical = ((ImplementationGuide) r).getUrl();
-              igs.add((ImplementationGuide) r);
-              if (canonical.contains("/ImplementationGuide/")) {
-                Resource r2 = r.copy();
-                ((ImplementationGuide) r2).setUrl(canonical.substring(0, canonical.indexOf("/ImplementationGuide/")));
-                getContext().cacheResource(r2);
-              }
-            }
           }
         }
       }
