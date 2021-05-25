@@ -401,6 +401,8 @@ public class CDANarrativeFormat {
         processTHead(xml, n);
       else if (n.getName().equals("tr"))
         processTr(xml, n);
+      else if (n.getName().equals("i"))
+        processI(xml, n);
       else
         throw new FHIRException("Unknown element "+n.getName());
     }
@@ -549,6 +551,13 @@ public class CDANarrativeFormat {
     xml.enter("tr");
     processChildren(xml, n);
     xml.exit("tr");
+  }
+
+  private void processI(IXMLWriter xml, XhtmlNode n) throws IOException, FHIRException {
+    xml.attribute("styleCode", "Italics");
+    xml.enter("content");
+    processChildren(xml, n);
+    xml.exit("content");
   }
 
   private void processAttributes(XhtmlNode xn, IXMLWriter xml, String... names) throws IOException {
