@@ -30,6 +30,7 @@ import org.hl7.fhir.r5.liquid.BaseTableWrapper;
 import org.hl7.fhir.r5.liquid.LiquidEngine;
 import org.hl7.fhir.r5.liquid.LiquidEngine.LiquidDocument;
 import org.hl7.fhir.r5.model.Base;
+import org.hl7.fhir.r5.model.IntegerType;
 import org.hl7.fhir.r5.model.StringType;
 import org.hl7.fhir.r5.model.StructureDefinition;
 import org.hl7.fhir.r5.model.ValueSet;
@@ -138,6 +139,36 @@ public class TestDataFactory {
       return res;   
     }
   }
+  
+  public static class RowIndexesFunction extends FunctionDefinition {
+
+      @Override
+      public String name() {
+        return "rowIndexes";
+      }
+
+      @Override
+      public FunctionDetails details() {
+        return new FunctionDetails("Returning the row indexes", 0, 0);
+      }
+
+      @Override
+      public TypeDetails check(FHIRPathEngine engine, Object appContext, TypeDetails focus, List<TypeDetails> parameters) {
+        return new TypeDetails(CollectionStatus.ORDERED, "integer");
+      }
+
+      @Override
+      public List<Base> execute(FHIRPathEngine engine, Object appContext, List<Base> focus, List<List<Base>> parameters) {
+        DataTable dt = (DataTable) focus.get(0);
+        List<Base> res = new ArrayList<Base>();
+        final int size = dt.getRows().size();
+        for (int i=0; i<size; ++i) {
+          res.add(new IntegerType(i));
+        }
+        return res;   
+      }
+    }
+  
 
   public static class TableLookupFunction extends FunctionDefinition {
 
@@ -148,7 +179,7 @@ public class TestDataFactory {
 
     @Override
     public FunctionDetails details() {
-      return new FunctionDetails("Lookup a value in a table", 4, 4);
+      return new FunctionDetails("Lookup a value in a table", 3, 3);
     }
 
     @Override
@@ -160,22 +191,20 @@ public class TestDataFactory {
     public List<Base> execute(FHIRPathEngine engine, Object appContext, List<Base> focus, List<List<Base>> parameters) {
 
       List<Base> res = new ArrayList<Base>();
-      if (focus.get(0) instanceof BaseTableWrapper && parameters.size() == 4 && parameters.get(0).size() == 1 && parameters.get(1).size() == 1 && parameters.get(2).size() == 1 && parameters.get(3).size() == 1) {
-        BaseTableWrapper dt = (BaseTableWrapper) focus.get(0);
-        String table = parameters.get(0).get(0).primitiveValue(); 
-        String lcol = parameters.get(1).get(0).primitiveValue();
-        String val = parameters.get(2).get(0).primitiveValue();
-        String rcol = parameters.get(3).get(0).primitiveValue();
-        if (table != null && lcol != null && val != null && rcol != null) {
-          DataTable tbl = dt.getTables().get(table);
-          if (tbl != null) {
-            String s = tbl.lookup(lcol, val, rcol);
-            if (!Utilities.noString(s)) {
-              res.add(new StringType(s));
+      if (focus.get(0) instanceof DataTable && parameters.size() == 3 && parameters.get(0).size() == 1 && parameters.get(1).size() == 1 && parameters.get(2).size() == 1) {
+          String lcol = parameters.get(0).get(0).primitiveValue();
+          String val = parameters.get(1).get(0).primitiveValue();
+          String rcol = parameters.get(2).get(0).primitiveValue();
+          DataTable tbl = (DataTable) focus.get(0);
+          if (lcol != null && val != null && rcol != null) {
+            if (tbl != null) {
+              String s = tbl.lookup(lcol, val, rcol);
+              if (!Utilities.noString(s)) {
+                res.add(new StringType(s));
+              }
             }
           }
         }
-      }
       return res;
     }
     
@@ -416,8 +445,13 @@ public class TestDataFactory {
     BaseTableWrapper base = BaseTableWrapper.forRow(columns, row);
     String cnt = liquid.evaluate(template, base, this).trim();
     if (format == FhirFormat.JSON) {
-      JsonObject j = JsonParser.parseObject(cnt, true);
-      return JsonParser.composeBytes(j, true);
+      try {
+        JsonObject j = JsonParser.parseObject(cnt, true);
+        return JsonParser.composeBytes(j, true);
+      } catch( Exception e) {
+      		log(cnt);
+      		throw (e);
+      }
     } else {
       return TextFile.stringToBytes(cnt);
     }

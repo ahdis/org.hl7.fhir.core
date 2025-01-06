@@ -944,6 +944,7 @@ public class ValidationService {
       hs.registerFunction(new BaseTableWrapper.TableDateColumnFunction());
       hs.registerFunction(new TestDataFactory.CellLookupFunction());
       hs.registerFunction(new TestDataFactory.TableLookupFunction());
+      hs.registerFunction(new TestDataFactory.RowIndexesFunction());
       fpe.setHostServices(hs);
       LiquidEngine liquid = new LiquidEngine(validationEngine.getContext(), hs);
       

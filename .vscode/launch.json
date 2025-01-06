@@ -1,0 +1,789 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "ExtensionDefinitionGenerator",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.ExtensionDefinitionGenerator",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "R2R3ConversionManager",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.R2R3ConversionManager",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "SearchParameterAnalysis",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.analytics.SearchParameterAnalysis",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "BOMRemover",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.BOMRemover",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "CKMImporter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.CKMImporter",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "CorePackageTools",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.CorePackageTools",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "CountryCodesConverter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.CountryCodesConverter",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "DicomPackageBuilder",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.DicomPackageBuilder",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ExamplesPackageBuilder",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.ExamplesPackageBuilder",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ExtensionExtractor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.ExtensionExtractor",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ExtensionStatusUpgrader",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.ExtensionStatusUpgrader",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "GenValueSetExpansionConvertor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.GenValueSetExpansionConvertor",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ICD11Generator",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.ICD11Generator",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ICPC2Importer",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.ICPC2Importer",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "IEEE11073Convertor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.IEEE11073Convertor",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "IGPackConverter102",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.IGPackConverter102",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "IGPackConverter140",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.IGPackConverter140",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "JsonProcessor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.JsonProcessor",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "NUCCConvertor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.NUCCConvertor",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "NpmPackageVersionConverter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.NpmPackageVersionConverter",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ObservationStatsBuilder",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.ObservationStatsBuilder",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "PackageMaintainer",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.PackageMaintainer",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "PackagePreparer",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.PackagePreparer",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "PhinVadsImporter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.PhinVadsImporter",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.Test",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "VSACImporter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.VSACImporter",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "XMLPackageConvertor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.XMLPackageConvertor",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "XVerPackegeFixer",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.XVerPackegeFixer",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ADLImporter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.adl.ADLImporter",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ArgonautConverter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.argonaut.ArgonautConverter",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "ISO21090Importer",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.iso21090.ISO21090Importer",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "SearchParameterProcessor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.searchparam.SearchParameterProcessor",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "UTGCaseSensitivePopulator",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.utg.UTGCaseSensitivePopulator",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "UTGVersionSorter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.utg.UTGVersionSorter",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "CorePackageVersionConvertor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.convertors.misc.xver.CorePackageVersionConvertor",
+            "projectName": "org.hl7.fhir.convertors"
+        },
+        {
+            "type": "java",
+            "name": "Tester",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.metamodel.Tester",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "ICPC2Importer(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.terminologies.ICPC2Importer",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "LoincToDEConvertor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.terminologies.LoincToDEConvertor",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "QuestionnaireBuilderTester",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.test.QuestionnaireBuilderTester",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "SingleTest",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.test.SingleTest",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "ToolsHelper",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.test.ToolsHelper",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "BatchLoader",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.utils.BatchLoader",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "DigitalSignatures",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.utils.DigitalSignatures",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "Unbundler",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2016may.utils.Unbundler",
+            "projectName": "org.hl7.fhir.dstu2016may"
+        },
+        {
+            "type": "java",
+            "name": "LoincToDEConvertor(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2.terminologies.LoincToDEConvertor",
+            "projectName": "org.hl7.fhir.dstu2"
+        },
+        {
+            "type": "java",
+            "name": "ProfileUtilitiesTests",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2.test.ProfileUtilitiesTests",
+            "projectName": "org.hl7.fhir.dstu2"
+        },
+        {
+            "type": "java",
+            "name": "QuestionnaireBuilderTester(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2.test.QuestionnaireBuilderTester",
+            "projectName": "org.hl7.fhir.dstu2"
+        },
+        {
+            "type": "java",
+            "name": "SingleTest(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2.test.SingleTest",
+            "projectName": "org.hl7.fhir.dstu2"
+        },
+        {
+            "type": "java",
+            "name": "ToolsHelper(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2.test.ToolsHelper",
+            "projectName": "org.hl7.fhir.dstu2"
+        },
+        {
+            "type": "java",
+            "name": "BatchLoader(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2.utils.BatchLoader",
+            "projectName": "org.hl7.fhir.dstu2"
+        },
+        {
+            "type": "java",
+            "name": "DigitalSignatures(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2.utils.DigitalSignatures",
+            "projectName": "org.hl7.fhir.dstu2"
+        },
+        {
+            "type": "java",
+            "name": "Unbundler(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu2.utils.Unbundler",
+            "projectName": "org.hl7.fhir.dstu2"
+        },
+        {
+            "type": "java",
+            "name": "Tester(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.elementmodel.Tester",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "LoincToDEConvertor(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.terminologies.LoincToDEConvertor",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "ProfileUtilitiesTests(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.test.ProfileUtilitiesTests",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "QuestionnaireBuilderTester(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.test.QuestionnaireBuilderTester",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "SingleTest(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.test.SingleTest",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "ToolsHelper(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.test.ToolsHelper",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "BatchLoader(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.utils.BatchLoader",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "DigitalSignatures(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.utils.DigitalSignatures",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "R3TEchnicalCorrectionProcessor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.utils.R3TEchnicalCorrectionProcessor",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "Unbundler(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.dstu3.utils.Unbundler",
+            "projectName": "org.hl7.fhir.dstu3"
+        },
+        {
+            "type": "java",
+            "name": "Tester(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.elementmodel.Tester",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "LoincToDEConvertor(3)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.terminologies.LoincToDEConvertor",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "QuestionnaireBuilderTester(3)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.test.QuestionnaireBuilderTester",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "ValidationTestConvertor",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.test.ValidationTestConvertor",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "SingleTest(3)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.test.misc.SingleTest",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "ToolsHelper(3)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.test.utils.ToolsHelper",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "BatchLoader(3)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.utils.BatchLoader",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "DigitalSignatures(3)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.utils.DigitalSignatures",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "MappingSheetParser",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.utils.MappingSheetParser",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "ResourceFixer",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.utils.ResourceFixer",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "Unbundler(3)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4b.utils.Unbundler",
+            "projectName": "org.hl7.fhir.r4b"
+        },
+        {
+            "type": "java",
+            "name": "Tester(3)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.elementmodel.Tester",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "LoincToDEConvertor(4)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.terminologies.LoincToDEConvertor",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "QuestionnaireBuilderTester(4)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.test.QuestionnaireBuilderTester",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "ValidationTestConvertor(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.test.ValidationTestConvertor",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "SingleTest(4)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.test.misc.SingleTest",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "ToolsHelper(4)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.test.utils.ToolsHelper",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "BatchLoader(4)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.utils.BatchLoader",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "DigitalSignatures(4)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.utils.DigitalSignatures",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "IntegrityChecker",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.utils.IntegrityChecker",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "NarrativeRemover",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.utils.NarrativeRemover",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "Unbundler(4)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r4.utils.Unbundler",
+            "projectName": "org.hl7.fhir.r4"
+        },
+        {
+            "type": "java",
+            "name": "Tester(4)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.elementmodel.Tester",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "LoincToDEConvertor(5)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.terminologies.LoincToDEConvertor",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "QuestionnaireBuilderTester(5)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.test.QuestionnaireBuilderTester",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "ValidationTestConvertor(2)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.test.ValidationTestConvertor",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "SingleTest(5)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.test.misc.SingleTest",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "ToolsHelper(5)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.test.utils.ToolsHelper",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "BatchLoader(5)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.utils.BatchLoader",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "DigitalSignatures(5)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.utils.DigitalSignatures",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "MappingSheetParser(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.utils.MappingSheetParser",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "ResourceFixer(1)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.utils.ResourceFixer",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "Unbundler(5)",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.r5.utils.Unbundler",
+            "projectName": "org.hl7.fhir.r5"
+        },
+        {
+            "type": "java",
+            "name": "BulkDelete",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.BulkDelete",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "FTPClient",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.FTPClient",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "IniFile",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.IniFile",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "NDJsonWriter",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.NDJsonWriter",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "NpmPackageIndexBuilder",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.npm.NpmPackageIndexBuilder",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "PackageHacker",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.npm.PackageHacker",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "PackageScanner",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.npm.PackageScanner",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "ResourceRenamer",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.npm.ResourceRenamer",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "XhtmlParserTests",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.utilities.tests.XhtmlParserTests",
+            "projectName": "org.hl7.fhir.utilities"
+        },
+        {
+            "type": "java",
+            "name": "ValidatorCli",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.validation.ValidatorCli",
+            "projectName": "org.hl7.fhir.validation"
+        },
+        {
+            "type": "java",
+            "name": "ValidatorCli compile",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.validation.ValidatorCli",
+            "projectName": "org.hl7.fhir.validation",
+            "cwd": "/Users/oegger/Documents/github/fhir-mapping-tutorial/maptutorial/step2",
+            "args": "-ig logical -ig map/step2.map -compile http://hl7.org/fhir/StructureMap/tutorial-step2 -version 5.0.0 -output step2.xml"
+        },
+        {
+            "type": "java",
+            "name": "ValidatorCli compile 4.0.1",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.validation.ValidatorCli",
+            "projectName": "org.hl7.fhir.validation",
+            "cwd": "/Users/oegger/Documents/github/fhir-mapping-tutorial/maptutorial/step2",
+            "args": "-ig logical -ig map/step2.map -compile http://hl7.org/fhir/StructureMap/tutorial-step2 -version 4.0.1 -output step2.xml"
+        },
+        {
+            "type": "java",
+            "name": "ValidatorCli factories",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.validation.ValidatorCli",
+            "projectName": "org.hl7.fhir.validation",
+            "args": "-factory /Users/oegger/Documents/github/ch-alis/factories.json -version 4.0"
+        },
+        {
+            "type": "java",
+            "name": "PackageValidator",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.validation.packages.PackageValidator",
+            "projectName": "org.hl7.fhir.validation"
+        },
+        {
+            "type": "java",
+            "name": "R4R5MapTester",
+            "request": "launch",
+            "mainClass": "org.hl7.fhir.validation.special.R4R5MapTester",
+            "projectName": "org.hl7.fhir.validation"
+        }
+    ]
+}
