@@ -122,6 +122,7 @@ public class ImplicitValueSets {
       vs.setCopyright("This value set includes content from SNOMED CT, which is copyright © 2002+ International Health Terminology Standards Development Organisation (SNOMED International), and distributed by agreement between SNOMED International and HL7. Implementer use of SNOMED CT is not covered by this agreement");
       vs.setStatus(PublicationStatus.ACTIVE);
       vs.getCompose().addInclude().setSystem("http://snomed.info/sct");
+      vs.setWebPath("https://browser.ihtsdotools.org/");
       return vs;
     } else if (query.startsWith("fhir_vs=isa/")) {
       String sct = query.substring(12);
@@ -182,6 +183,7 @@ public class ImplicitValueSets {
       vs.setStatus(PublicationStatus.ACTIVE);
       vs.setCopyright("This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use");
       vs.getCompose().addInclude().setSystem("http://loinc.org").addFilter().setProperty("LIST").setOp(Enumerations.FilterOperator.EQUAL).setValue(c);
+      vs.setWebPath("https://loinc.org/LL"+c);
       return vs;
     } else if (url.startsWith("http://loinc.org/vs/LP")) {
       String c = url.substring("http://loinc.org/vs/".length());
@@ -193,6 +195,7 @@ public class ImplicitValueSets {
       vs.setStatus(PublicationStatus.ACTIVE);
       vs.setCopyright("This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use");
       vs.getCompose().addInclude().setSystem("http://loinc.org").addFilter().setProperty("ancestor").setOp(Enumerations.FilterOperator.EQUAL).setValue(c);
+      vs.setWebPath("https://loinc.org/LP"+c);
       return vs;
     } else if (url.equals("http://loinc.org/vs")) {
       ValueSet vs = new ValueSet();
@@ -203,6 +206,7 @@ public class ImplicitValueSets {
       vs.setTitle("All LOINC codes");
       vs.setCopyright("This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use");
       vs.getCompose().addInclude().setSystem("http://loinc.org");
+      vs.setWebPath("http://loinc.org/");
       return vs;
     } else if ("http://loinc.org/vs/valid-hl7-attachment-requests".equals(url)) {
       ValueSet vs = new ValueSet();

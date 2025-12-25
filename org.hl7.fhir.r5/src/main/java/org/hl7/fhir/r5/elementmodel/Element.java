@@ -1,6 +1,5 @@
 package org.hl7.fhir.r5.elementmodel;
 
-import java.io.IOException;
 import java.io.PrintStream;
 
 /*
@@ -40,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.Validate;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r5.conformance.profile.ProfileUtilities;
@@ -173,6 +174,7 @@ public class Element extends Base implements NamedItem {
   private Object nativeObject;
   private List<SliceDefinition> sliceDefinitions;
   private boolean elided;
+  @Getter @Setter private String resourceDefinition;
   
 	public Element(String name) {
 		super();
@@ -837,7 +839,7 @@ public class Element extends Base implements NamedItem {
 
   public String getNamedChildValueSingle(String... names) {
     for (String name : names) {
-      String result = getNamedChildValueSingle(name, true);
+      String result = getNamedChildValueSingle(name, false);
       if (result != null) {
         return result;
       }
@@ -1796,6 +1798,15 @@ public class Element extends Base implements NamedItem {
 
   public boolean hasXhtml() {
     return xhtml != null;
+  }
+
+  public boolean isElementForPath(String... paths) {
+    for (String s : paths) {
+      if (s.equals(property.getDefinition().getBase().getPath())) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

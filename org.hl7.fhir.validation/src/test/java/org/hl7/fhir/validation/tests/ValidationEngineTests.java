@@ -26,6 +26,7 @@ import org.hl7.fhir.utilities.tests.CacheVerificationLogger;
 import org.hl7.fhir.validation.IgLoader;
 import org.hl7.fhir.validation.ValidationEngine;
 import org.hl7.fhir.validation.service.StandAloneValidatorFetcher;
+import org.hl7.fhir.validation.service.model.InstanceValidatorParameters;
 import org.hl7.fhir.validation.tests.utilities.TestUtilities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -228,10 +229,10 @@ public class ValidationEngineTests {
   public void test301() throws Exception {
     if (!TestUtilities.silent)
       System.out.println("Test301: Validate observation301.xml against Core");
-    ValidationEngine ve = TestUtilities.getValidationEngine("hl7.fhir.r3.core#3.0.2", DEF_TX, FhirPublication.STU3, "3.0.2");
+    ValidationEngine ve = TestUtilities.getValidationEngine("hl7.fhir.r3.core#3.0.2", DEF_TX, FhirPublication.STU3, "3.0.2", new InstanceValidatorParameters().setAllowExampleUrls(true));
     CacheVerificationLogger logger = new CacheVerificationLogger();
     ve.getContext().getTxClientManager().getMasterClient().setLogger(logger);
-    ve.setAllowExampleUrls(true);
+
     if (!TestUtilities.silent)
       System.out.println("  .. load USCore");
     OperationOutcome op = ve.validate(FhirFormat.XML, TestingUtilities.loadTestResourceStream("validator", "observation301.xml"), null);
@@ -274,14 +275,14 @@ public class ValidationEngineTests {
     List<String> profiles = new ArrayList<>();
     OperationOutcome op = ve.validate(FhirFormat.JSON, TestingUtilities.loadTestResourceStream("validator", "observation401_ucum.json"), profiles);
     Assertions.assertTrue(checkOutcomes("test401USCore", op, 
-      "information/invalid @ Observation.meta.source: The URL value '#iLFSV7OLv0KF8dmQ' might be wrong because it appears to point to an internal target, but there is no matching target\n"
-      + "warning/not-found @ Observation.code.coding[0].system: A definition for CodeSystem 'http://loinc.org' could not be found, so the code cannot be validated\n"
-      + "warning/business-rule @ Observation.value.ofType(Quantity): Unable to validate code 'kg' in system 'http://unitsofmeasure.org' because the validator is running without terminology services\n"
-      + "warning/invariant @ Observation: Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)\n"
-      + "information/informational @ Observation: Validate Observation against the Body weight profile (http://hl7.org/fhir/StructureDefinition/bodyweight) which is required by the FHIR specification because the LOINC code 29463-7 was found\n"
-      + "warning/not-found @ Observation.code: Unable to check whether the code is in the value set 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1' because the code system http://loinc.org was not found\n"
-      + "warning/informational @ Observation.value.ofType(Quantity).code: Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated\n"
-      + "warning/invalid @ Observation: Best Practice Recommendation: In general, all observations should have a performer"));
+      "information/invalid @ Observation.meta.source: The URL value '#iLFSV7OLv0KF8dmQ' might be wrong because it appears to point to an internal target, but there is no matching target\n" +
+        "warning/code-invalid @ Observation.code: Error Cannot invoke \"org.hl7.fhir.r5.terminologies.client.TerminologyClientContext.getAddress()\" because \"tc\" is null validating CodeableConcept\n" +
+        "warning/business-rule @ Observation.value.ofType(Quantity): Unable to validate code 'kg' in system 'http://unitsofmeasure.org' because the validator is running without terminology services\n" +
+        "warning/invariant @ Observation: Constraint failed: dom-6: 'A resource should have narrative for robust management' (defined in http://hl7.org/fhir/StructureDefinition/DomainResource) (Best Practice Recommendation)\n" +
+        "information/informational @ Observation: Validate Observation against the Body weight profile (http://hl7.org/fhir/StructureDefinition/bodyweight) which is required by the FHIR specification because the LOINC code 29463-7 was found\n" +
+        "information/code-invalid @ Observation.code: Could not confirm that the codes provided are from the extensible value set http://hl7.org/fhir/ValueSet/observation-vitalsignresult|4.0.1 because there is no terminology service\n" +
+        "warning/informational @ Observation.value.ofType(Quantity).code: Unable to validate code without using server because: Resolved system http://unitsofmeasure.org (v3.0.1), but the definition doesn't include any codes, so the code has not been validated\n" +
+        "warning/invalid @ Observation: Best Practice Recommendation: In general, all observations should have a performer"));
     verifyNoTerminologyRequests(logger);
   }
 
@@ -374,12 +375,12 @@ public class ValidationEngineTests {
 
   @Test
   public void testResolveAbsoluteValid() throws Exception {
-    ValidationEngine ve = TestUtilities.getValidationEngine("hl7.fhir.r4.core#4.0.1", DEF_TX, FhirPublication.R4, "4.0.1");
+    ValidationEngine ve = TestUtilities.getValidationEngine("hl7.fhir.r4.core#4.0.1", DEF_TX, FhirPublication.R4, "4.0.1", new InstanceValidatorParameters().setShowMessagesFromReferences(true));
     StandAloneValidatorFetcher fetcher = new StandAloneValidatorFetcher(ve.getPcm(), ve.getContext(), ve);
     ve.setFetcher(fetcher);
     ve.getContext().setLocator(fetcher);
     ve.setPolicyAdvisor(fetcher);
-    ve.setShowMessagesFromReferences(true);
+
     fetcher.setReferencePolicy(ReferenceValidationPolicy.CHECK_VALID);
     ve.seeResource(new JsonParser().parse(TestingUtilities.loadTestResourceStream("validator", "resolution", "StructureDefinition-Observation.json")));
     ve.seeResource(new JsonParser().parse(TestingUtilities.loadTestResourceStream("validator", "resolution", "StructureDefinition-Patient.json")));

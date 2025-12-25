@@ -255,6 +255,9 @@ public class ProfileDrivenRenderer extends ResourceRenderer {
     for (ElementDefinition e : elements) {
       if (e.getPath().equals(path) && e.hasContentReference()) {
         String ref = e.getContentReference();
+        if (ref.contains("#")) {
+          ref = ref.substring(ref.indexOf("#"));
+        }
         ElementDefinition t = null;
         // now, resolve the name
         for (ElementDefinition e1 : elements) {
@@ -604,7 +607,7 @@ public class ProfileDrivenRenderer extends ResourceRenderer {
               if (xverManager.matchingUrl(url) && xverManager.status(url) == XVerExtensionStatus.Valid) {
                 ed = xverManager.getDefinition(url);
                 new ContextUtilities(getContext().getWorker()).generateSnapshot(ed);
-                getContext().getWorker().cacheResource(ed);
+                getContext().getWorker().getManager().cacheResource(ed);
               } 
             }
             if (p.getName().equals("modifierExtension") && ed == null) {

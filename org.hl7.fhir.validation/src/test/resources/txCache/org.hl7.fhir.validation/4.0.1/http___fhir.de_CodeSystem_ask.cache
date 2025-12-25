@@ -20,7 +20,8 @@ v: {
   "severity" : "error",
   "error" : "A definition for CodeSystem 'http://fhir.de/CodeSystem/ask' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
-  "server" : "http://local.fhir.org/r4",
+  "server" : "https://tx-dev.fhir.org/r4",
+  "diagnostics" : "0 0 : start\r\n15 15   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n15 0    : 0ms  : Parameters: disp-lang=en-US\r\n15 0    : 0ms  : Prepare include: \"()\"\r\n15 0    : 0ms  : Validate \"[http://fhir.de/CodeSystem/ask#05482 (\"Blutgerinnungsfaktor II\")]\"\r\n15 0    : 0ms  : Check \"http://fhir.de/CodeSystem/ask#05482\"\r\n15 0    : 0ms  : Didn't find CodeSystem \"http://fhir.de/CodeSystem/ask\"\r\n",
   "unknown-systems" : "http://fhir.de/CodeSystem/ask",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -31,7 +32,7 @@ v: {
     },
     {
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r4"
+      "valueUrl" : "https://tx-dev.fhir.org/r4"
     }],
     "severity" : "error",
     "code" : "not-found",
@@ -70,7 +71,8 @@ v: {
   "severity" : "error",
   "error" : "A definition for CodeSystem 'http://fhir.de/CodeSystem/ask' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
-  "server" : "http://local.fhir.org/r4",
+  "server" : "https://tx-dev.fhir.org/r4",
+  "diagnostics" : "0 0 : start\r\n15 15   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n15 0    : 0ms  : Parameters: disp-lang=en-US\r\n15 0    : 0ms  : Prepare include: \"()\"\r\n15 0    : 0ms  : Validate \"[http://fhir.de/CodeSystem/ask#06225 (\"Blutgerinnungsfaktor VII\")]\"\r\n15 0    : 0ms  : Check \"http://fhir.de/CodeSystem/ask#06225\"\r\n15 0    : 0ms  : Didn't find CodeSystem \"http://fhir.de/CodeSystem/ask\"\r\n",
   "unknown-systems" : "http://fhir.de/CodeSystem/ask",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -81,7 +83,7 @@ v: {
     },
     {
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r4"
+      "valueUrl" : "https://tx-dev.fhir.org/r4"
     }],
     "severity" : "error",
     "code" : "not-found",
@@ -120,7 +122,8 @@ v: {
   "severity" : "error",
   "error" : "A definition for CodeSystem 'http://fhir.de/CodeSystem/ask' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
-  "server" : "http://local.fhir.org/r4",
+  "server" : "https://tx-dev.fhir.org/r4",
+  "diagnostics" : "0 0 : start\r\n16 16   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n16 0    : 0ms  : Parameters: disp-lang=en-US\r\n16 0    : 0ms  : Prepare include: \"()\"\r\n16 0    : 0ms  : Validate \"[http://fhir.de/CodeSystem/ask#1234 (\"Protein S (human)\")]\"\r\n16 0    : 0ms  : Check \"http://fhir.de/CodeSystem/ask#1234\"\r\n16 0    : 0ms  : Didn't find CodeSystem \"http://fhir.de/CodeSystem/ask\"\r\n",
   "unknown-systems" : "http://fhir.de/CodeSystem/ask",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -131,7 +134,7 @@ v: {
     },
     {
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r4"
+      "valueUrl" : "https://tx-dev.fhir.org/r4"
     }],
     "severity" : "error",
     "code" : "not-found",
@@ -170,7 +173,8 @@ v: {
   "severity" : "error",
   "error" : "A definition for CodeSystem 'http://fhir.de/CodeSystem/ask' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
-  "server" : "http://local.fhir.org/r4",
+  "server" : "https://tx-dev.fhir.org/r4",
+  "diagnostics" : "0 0 : start\r\n0 0     : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n0 0     : 0ms  : Parameters: disp-lang=en-US\r\n0 0     : 0ms  : Prepare include: \"()\"\r\n0 0     : 0ms  : Validate \"[http://fhir.de/CodeSystem/ask#10669 (\"Plasmaprotein C vom Menschen\")]\"\r\n0 0     : 0ms  : Check \"http://fhir.de/CodeSystem/ask#10669\"\r\n0 0     : 0ms  : Didn't find CodeSystem \"http://fhir.de/CodeSystem/ask\"\r\n",
   "unknown-systems" : "http://fhir.de/CodeSystem/ask",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -181,7 +185,7 @@ v: {
     },
     {
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r4"
+      "valueUrl" : "https://tx-dev.fhir.org/r4"
     }],
     "severity" : "error",
     "code" : "not-found",
@@ -220,7 +224,8 @@ v: {
   "severity" : "error",
   "error" : "A definition for CodeSystem 'http://fhir.de/CodeSystem/ask' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
-  "server" : "http://local.fhir.org/r4",
+  "server" : "https://tx-dev.fhir.org/r4",
+  "diagnostics" : "0 0 : start\r\n15 15   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n15 0    : 0ms  : Parameters: disp-lang=en-US\r\n15 0    : 0ms  : Prepare include: \"()\"\r\n15 0    : 0ms  : Validate \"[http://fhir.de/CodeSystem/ask#03800 (\"Blutgerinnungsfaktor IX vom Menschen\")]\"\r\n15 0    : 0ms  : Check \"http://fhir.de/CodeSystem/ask#03800\"\r\n15 0    : 0ms  : Didn't find CodeSystem \"http://fhir.de/CodeSystem/ask\"\r\n",
   "unknown-systems" : "http://fhir.de/CodeSystem/ask",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -231,7 +236,7 @@ v: {
     },
     {
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r4"
+      "valueUrl" : "https://tx-dev.fhir.org/r4"
     }],
     "severity" : "error",
     "code" : "not-found",
@@ -270,7 +275,8 @@ v: {
   "severity" : "error",
   "error" : "A definition for CodeSystem 'http://fhir.de/CodeSystem/ask' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
-  "server" : "http://local.fhir.org/r4",
+  "server" : "https://tx-dev.fhir.org/r4",
+  "diagnostics" : "0 0 : start\r\n16 16   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n16 0    : 0ms  : Parameters: disp-lang=en-US\r\n16 0    : 0ms  : Prepare include: \"()\"\r\n16 0    : 0ms  : Validate \"[http://fhir.de/CodeSystem/ask#06226 (\"Blutgerinnungsfaktor X\")]\"\r\n16 0    : 0ms  : Check \"http://fhir.de/CodeSystem/ask#06226\"\r\n16 0    : 0ms  : Didn't find CodeSystem \"http://fhir.de/CodeSystem/ask\"\r\n",
   "unknown-systems" : "http://fhir.de/CodeSystem/ask",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -281,7 +287,7 @@ v: {
     },
     {
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r4"
+      "valueUrl" : "https://tx-dev.fhir.org/r4"
     }],
     "severity" : "error",
     "code" : "not-found",

@@ -189,11 +189,14 @@ public class VersionUtilities {
     if (isR4Ver(v)) {
       return "4.0.1";
     }
+    if (isR4BVer(v)) {
+      return "4.3.0";
+    }
     if (isR5Ver(v)) {
       return "5.0.0";
     }
     if (isR6Ver(v)) {
-      return "6.0.0";
+      return "6.0.0-ballot3";
     }
     return v;
   }
@@ -788,7 +791,7 @@ public class VersionUtilities {
       res.add("ValueSet");
     }
 
-    if (isR5Ver(version) || isR6Ver(version)) {
+    if (isR5Ver(version)) {
       res.add("ActorDefinition");
       res.add("ActivityDefinition");
       res.add("CapabilityStatement");
@@ -823,6 +826,41 @@ public class VersionUtilities {
       res.add("TerminologyCapabilities");
       res.add("TestPlan");
       res.add("TestScript");
+      res.add("ValueSet");
+    }
+    if (isR6Ver(version)) {
+      res.add("ActorDefinition");
+      res.add("ActivityDefinition");
+      res.add("CapabilityStatement");
+      res.add("ChargeItemDefinition");
+      res.add("Citation");
+      res.add("ClinicalUseDefinition");
+      res.add("CodeSystem");
+      res.add("CompartmentDefinition");
+      res.add("ConceptMap");
+      res.add("ConditionDefinition");
+      res.add("DeviceDefinition");
+      res.add("EventDefinition");
+      res.add("Evidence");
+      res.add("EvidenceVariable");
+      res.add("ExampleScenario");
+      res.add("Group");
+      res.add("ImplementationGuide");
+      res.add("Library");
+      res.add("Measure");
+      res.add("MessageDefinition");
+      res.add("NamingSystem");
+      res.add("ObservationDefinition");
+      res.add("OperationDefinition");
+      res.add("PlanDefinition");
+      res.add("Questionnaire");
+      res.add("Requirements");
+      res.add("SearchParameter");
+      res.add("SpecimenDefinition");
+      res.add("StructureDefinition");
+      res.add("StructureMap");
+      res.add("SubscriptionTopic");
+      res.add("TerminologyCapabilities");
       res.add("ValueSet");
     }
     return res;
@@ -860,7 +898,7 @@ public class VersionUtilities {
    * 2.0.* matches 2.0.0, 2.0.1, and not 2.0.0-something or 2.0.0+something
    * 2.0.0-* matches 2.0.0-prerelease or any other label but not 2.0.0+build
    * 2.0.0+* matches 2.0.0+build or any other build but not 2.0.0 or 2.0.0-prerelease
-   * 2.0.x-x matches 2.0.1-prerelease or 2.0.1-prerelease but not 2.0.0 or 2.0.1
+   * 2.0.x-* matches 2.0.1-prerelease or 2.0.1-prerelease but not 2.0.0 or 2.0.1
    * 2.0? matches 2.0, 2.0.1, 2.0.0-build etc - anything that starts with 2.0
    * 2.0.1? matches 2.0.1, 2.0.1-release, 2.0.1+build etc - anything that starts with 2.0.1
    * 2.x? matches 2.anything (weird thing to do)

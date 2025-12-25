@@ -599,11 +599,16 @@ public class XhtmlParser {
         addTextNode(node, s);
         readChar();
         if (peekChar() == '!') {
-          String sc = readToCommentEnd(true);
-          // moved the validator
-          //          if (sc.startsWith("DOCTYPE"))
-          //            throw new FHIRFormatError("Malformed XHTML: Found a DocType declaration, and these are not allowed (XXE security vulnerability protection)");
-          node.addComment(sc).setLocation(markLocation());
+          readChar();
+          String sc;
+          if (peekChar() == '[') {
+            sc = readCData();
+            node.addCData(sc).setLocation(markLocation());
+          } else {
+            pushChar('!');
+            sc = readToCommentEnd(true);
+            node.addComment(sc).setLocation(markLocation());
+          }
         } else if (peekChar() == '?')
           node.addComment(readToTagEnd()).setLocation(markLocation());
         else if (peekChar() == '/') {
@@ -871,7 +876,7 @@ public class XhtmlParser {
     return s.toString();
   }
 
-  private String readToCommentEnd(boolean simple) throws IOException, FHIRFormatError 
+  private String readToCommentEnd(boolean simple) throws IOException, FHIRFormatError
   {
     if (peekChar() == '!')
       readChar();
@@ -926,6 +931,24 @@ public class XhtmlParser {
       parseDoctypeEntities(s.toString());
     }
     return s.toString();
+  }
+
+  private String readCData() throws IOException, FHIRFormatError {
+    StringBuilder b = new StringBuilder();
+    char c;
+    while (true) {
+      c = readChar();
+      if (c == END_OF_CHARS) {
+        throw new IllegalStateException("Stream ended before finding ']]>' terminator");
+      }
+      b.append(c);
+      if (c == '>' && b.length() >= 3 &&
+        b.charAt(b.length() - 2) == ']' &&
+        b.charAt(b.length() - 3) == ']') {
+        break;
+      }
+    }
+    return b.substring(7, b.length() - 3);
   }
 
   private void parseDoctypeEntities(String s) {

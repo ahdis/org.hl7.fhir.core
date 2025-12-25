@@ -464,6 +464,11 @@ public class SnapShotGenerationTests {
     public boolean paramIsType(String name, int index) {
       return false;
     }
+
+
+    public Base findContainingResource(Object appContext, Base item) {
+      return null;
+    }
   }
 
   private static FHIRPathEngine fp;
@@ -477,7 +482,7 @@ public class SnapShotGenerationTests {
     FilesystemPackageCacheManager pcm = new FilesystemPackageCacheManager.Builder().build();
     NpmPackage npm = pcm.loadPackage("hl7.fhir.uv.sdc");
     System.out.println("loading SDC "+npm.version());
-    testContext.loadFromPackage(npm, null);
+    testContext.getManager().loadFromPackage(npm, null);
   }
 
   public static Stream<Arguments> data() throws ParserConfigurationException, IOException, FHIRFormatError, SAXException {
@@ -560,8 +565,8 @@ public class SnapShotGenerationTests {
         pu.setIds(sd, false);
       }
       for (StructureDefinition sd : test.included) {
-        if (!testContext.hasResource(StructureDefinition.class, sd.getUrl(), sd.getVersion())) {
-          testContext.cacheResource(sd);
+        if (!testContext.hasResource(StructureDefinition.class, sd.getUrl(), sd.getVersion(), sd)) {
+          testContext.getManager().cacheResource(sd);
         }
       }
       StructureDefinition base = testContext.fetchResource(StructureDefinition.class, test.included.get(0).getBaseDefinition());
@@ -591,7 +596,7 @@ public class SnapShotGenerationTests {
     pu.setAllowUnknownProfile(test.allow);
     if (!testContext.hasPackage(CommonPackages.ID_XVER, CommonPackages.VER_XVER)) {
       NpmPackage npm = new FilesystemPackageCacheManager.Builder().build().loadPackage(CommonPackages.ID_XVER, CommonPackages.VER_XVER);
-      testContext.loadFromPackage(npm, new TestPackageLoader(Utilities.stringSet("StructureDefinition")));
+      testContext.getManager().loadFromPackage(npm, new TestPackageLoader(Utilities.stringSet("StructureDefinition")));
     }
     pu.setXver(XVerExtensionManagerFactory.createExtensionManager(testContext));
     if (test.isSort()) {
@@ -635,7 +640,7 @@ public class SnapShotGenerationTests {
     output.setText(null);
     if (!fail) {
       test.output = output;
-      testContext.cacheResource(output);
+      testContext.getManager().cacheResource(output);
       File dst = ManagedFileAccess.file(TestingUtilities.tempFile("snapshot", test.getId() + "-expected" + (test.json ? ".json" : ".xml")));
       if (dst.exists()) {
         dst.delete();
@@ -679,7 +684,7 @@ public class SnapShotGenerationTests {
       if (url.contains("|")) {
         url = url.substring(0, url.indexOf("|"));
       }
-      throw new DefinitionException("Unable to find profile "+url+". Known versions = "+testContext.fetchResourceVersionsByTypeAndUrl(StructureDefinition.class, url));
+      throw new DefinitionException("Unable to find profile "+url+". Known versions = "+testContext.fetchResourceVersions(StructureDefinition.class, url));
     }
     if (!sd.hasSnapshot()) {
       StructureDefinition base = getSD(sd.getBaseDefinition(), context);

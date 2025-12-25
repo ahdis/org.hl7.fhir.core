@@ -43,6 +43,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r5.context.ExpansionOptions;
 import org.hl7.fhir.r5.formats.IParser.OutputStyle;
 import org.hl7.fhir.r5.formats.JsonParser;
 import org.hl7.fhir.r5.model.*;
@@ -521,17 +522,17 @@ public class TerminologyCache {
     return vsc;
   }
 
-  public CacheToken generateExpandToken(ValueSet vs, boolean hierarchical) {
+  public CacheToken generateExpandToken(ValueSet vs, ExpansionOptions options) {
     CacheToken ct = new CacheToken();
     nameCacheToken(vs, ct);
     if (vs.hasUrl() && vs.hasVersion()) {
-      ct.request = "{\"hierarchical\" : "+(hierarchical ? "true" : "false")+", \"url\": \""+Utilities.escapeJson(vs.getUrl())+"\", \"version\": \""+Utilities.escapeJson(vs.getVersion())+"\"}\r\n";      
+      ct.request = "{\"hierarchical\" : "+(options.isHierarchical() ? "true" : "false")+(options.hasLanguage() ?  ", \"language\": \""+options.getLanguage()+"\"" : "")+", \"url\": \""+Utilities.escapeJson(vs.getUrl())+"\", \"version\": \""+Utilities.escapeJson(vs.getVersion())+"\"}\r\n";
     } else {
       ValueSet vsc = getVSEssense(vs);
       JsonParser json = new JsonParser();
       json.setOutputStyle(OutputStyle.PRETTY);
       try {
-        ct.request = "{\"hierarchical\" : "+(hierarchical ? "true" : "false")+", \"valueSet\" :"+extracted(json, vsc)+"}\r\n";
+        ct.request = "{\"hierarchical\" : "+(options.isHierarchical() ? "true" : "false")+(options.hasLanguage() ?  ", \"language\": \""+options.getLanguage()+"\"" : "")+", \"valueSet\" :"+extracted(json, vsc)+"}\r\n";
       } catch (IOException e) {
         throw new Error(e);
       }
@@ -540,9 +541,9 @@ public class TerminologyCache {
     return ct;
   }
   
-  public CacheToken generateExpandToken(String url, boolean hierarchical) {
+  public CacheToken generateExpandToken(String url, ExpansionOptions options) {
     CacheToken ct = new CacheToken();
-    ct.request = "{\"hierarchical\" : "+(hierarchical ? "true" : "false")+", \"url\": \""+Utilities.escapeJson(url)+"\"}\r\n";      
+    ct.request = "{\"hierarchical\" : "+(options.isHierarchical() ? "true" : "false")+(options.hasLanguage() ?  ", \"language\": \""+options.getLanguage()+"\"" : "")+", \"url\": \""+Utilities.escapeJson(url)+"\"}\r\n";
     ct.key = String.valueOf(hashJson(ct.request));
     return ct;
   }
@@ -767,6 +768,10 @@ public class TerminologyCache {
             if (first) first = false; else sw.write(",\r\n");
             sw.write("  \"inactive\" : true");
           }
+          if (ce.v.getDiagnostics() != null) {
+            if (first) first = false; else sw.write(",\r\n");
+            sw.write("  \"diagnostics\" : \""+Utilities.escapeJson(ce.v.getDiagnostics()).trim()+"\"");
+          }
           if (ce.v.getUnknownSystems() != null) {
             if (first) first = false; else sw.write(",\r\n");
             sw.write("  \"unknown-systems\" : \""+Utilities.escapeJson(CommaSeparatedStringBuilder.join(",", ce.v.getUnknownSystems())).trim()+"\"");
@@ -872,6 +877,7 @@ public class TerminologyCache {
       ce.v.setUnknownSystems(CommaSeparatedStringBuilder.toSet(unknownSystems));
       ce.v.setServer(server);
       ce.v.setStatus(inactive, status);
+      ce.v.setDiagnostics(loadJS(o.get("diagnostics")));
       if (oo != null) {
         ce.v.setIssues(oo.getIssue());
       }

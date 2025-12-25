@@ -18,7 +18,8 @@ v: {
   "code" : "L/min",
   "system" : "http://unitsofmeasure.org",
   "version" : "2.2",
-  "server" : "http://local.fhir.org/r3",
+  "server" : "https://tx-dev.fhir.org/r3",
+  "diagnostics" : "0 0 : start\r\n0 0     : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n0 0     : 0ms  : Parameters: disp-lang=fi\r\n0 0     : 0ms  : Prepare include: \"()\"\r\n0 0     : 0ms  : Validate \"[http://unitsofmeasure.org#L/min (\"\")]\"\r\n0 0     : 0ms  : Check \"http://unitsofmeasure.org#L/min\"\r\n0 0     : 0ms  : Using CodeSystem \"http://unitsofmeasure.org|2.2\" (content = complete)\r\n",
   "issues" : {
   "resourceType" : "OperationOutcome"
 }
@@ -45,7 +46,8 @@ v: {
   "severity" : "error",
   "error" : "Unknown code '21612-7' in the CodeSystem 'http://unitsofmeasure.org' version '2.2'",
   "class" : "UNKNOWN",
-  "server" : "http://local.fhir.org/r3",
+  "server" : "https://tx-dev.fhir.org/r3",
+  "diagnostics" : "0 0 : start\r\n0 0     : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n0 0     : 0ms  : Parameters: disp-lang=fi\r\n0 0     : 0ms  : Prepare include: \"()\"\r\n0 0     : 0ms  : Validate \"[http://unitsofmeasure.org#21612-7 (\"\")]\"\r\n0 0     : 0ms  : Check \"http://unitsofmeasure.org#21612-7\"\r\n0 0     : 0ms  : Using CodeSystem \"http://unitsofmeasure.org|2.2\" (content = complete)\r\n",
   "issues" : {
   "resourceType" : "OperationOutcome",
   "issue" : [{
@@ -55,7 +57,7 @@ v: {
     },
     {
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r3"
+      "valueUrl" : "https://tx-dev.fhir.org/r3"
     }],
     "severity" : "error",
     "code" : "code-invalid",
@@ -72,7 +74,7 @@ v: {
   {
     "extension" : [{
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r3"
+      "valueUrl" : "https://tx-dev.fhir.org/r3"
     }],
     "severity" : "information",
     "code" : "code-invalid",
@@ -110,7 +112,8 @@ v: {
   "severity" : "error",
   "error" : "Unknown code 'tbl' in the CodeSystem 'http://unitsofmeasure.org' version '2.2'",
   "class" : "UNKNOWN",
-  "server" : "http://local.fhir.org/r3",
+  "server" : "https://tx-dev.fhir.org/r3",
+  "diagnostics" : "0 0 : start\r\n0 0     : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n0 0     : 0ms  : Parameters: disp-lang=en-US\r\n0 0     : 0ms  : Prepare include: \"()\"\r\n0 0     : 0ms  : Validate \"[http://unitsofmeasure.org#tbl (\"\")]\"\r\n0 0     : 0ms  : Check \"http://unitsofmeasure.org#tbl\"\r\n0 0     : 0ms  : Using CodeSystem \"http://unitsofmeasure.org|2.2\" (content = complete)\r\n",
   "issues" : {
   "resourceType" : "OperationOutcome",
   "issue" : [{
@@ -120,7 +123,7 @@ v: {
     },
     {
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r3"
+      "valueUrl" : "https://tx-dev.fhir.org/r3"
     }],
     "severity" : "error",
     "code" : "code-invalid",
@@ -137,7 +140,7 @@ v: {
   {
     "extension" : [{
       "url" : "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-server",
-      "valueUrl" : "http://local.fhir.org/r3"
+      "valueUrl" : "https://tx-dev.fhir.org/r3"
     }],
     "severity" : "information",
     "code" : "code-invalid",
@@ -174,7 +177,8 @@ v: {
   "code" : "mmol/L",
   "system" : "http://unitsofmeasure.org",
   "version" : "2.2",
-  "server" : "http://local.fhir.org/r3",
+  "server" : "https://tx-dev.fhir.org/r3",
+  "diagnostics" : "0 0 : start\r\n16 16   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n16 0    : 0ms  : Parameters: disp-lang=en-US\r\n16 0    : 0ms  : Prepare include: \"()\"\r\n16 0    : 0ms  : Validate \"[http://unitsofmeasure.org#mmol/L (\"\")]\"\r\n16 0    : 0ms  : Check \"http://unitsofmeasure.org#mmol/L\"\r\n16 0    : 0ms  : Using CodeSystem \"http://unitsofmeasure.org|2.2\" (content = complete)\r\n",
   "issues" : {
   "resourceType" : "OperationOutcome"
 }
@@ -200,7 +204,8 @@ v: {
   "code" : "[lb_av]",
   "system" : "http://unitsofmeasure.org",
   "version" : "2.2",
-  "server" : "http://local.fhir.org/r3",
+  "server" : "https://tx-dev.fhir.org/r3",
+  "diagnostics" : "0 0 : start\r\n16 16   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n16 0    : 0ms  : Parameters: disp-lang=en-US, default-to-latest\r\n16 0    : 0ms  : Prepare include: \"()\"\r\n16 0    : 0ms  : Validate \"[http://unitsofmeasure.org#[lb_av] (\"\")]\"\r\n16 0    : 0ms  : Check \"http://unitsofmeasure.org#[lb_av]\"\r\n16 0    : 0ms  : Using CodeSystem \"http://unitsofmeasure.org|2.2\" (content = complete)\r\n",
   "unknown-systems" : "",
   "issues" : {
   "resourceType" : "OperationOutcome"

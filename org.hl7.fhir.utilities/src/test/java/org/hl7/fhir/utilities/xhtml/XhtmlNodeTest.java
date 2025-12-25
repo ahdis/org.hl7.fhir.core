@@ -1,20 +1,18 @@
 package org.hl7.fhir.utilities.xhtml;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.exceptions.FHIRFormatError;
 import org.hl7.fhir.utilities.tests.BaseTestingUtilities;
-import org.hl7.fhir.utilities.xhtml.NodeType;
-import org.hl7.fhir.utilities.xhtml.XhtmlComposer;
-import org.hl7.fhir.utilities.xhtml.XhtmlNode;
-import org.hl7.fhir.utilities.xhtml.XhtmlParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class XhtmlNodeTest {
 
@@ -81,28 +79,36 @@ public class XhtmlNodeTest {
 
   @Test
   public void testParseXXE() {
-    XhtmlNode dt = new XhtmlNode();
-    dt.setValueAsString("<div xmlns=\"http://www.w3.org/1999/xhtml\">\n      <!DOCTYPE foo [ <!ENTITY xxe SYSTEM \"file://xxe.txt\">]>\n <p>This is some narrative  &xxe;</p>\n    </div>");
+    assertDoesNotThrow(() -> {
+      XhtmlNode dt = new XhtmlNode();
+      dt.setValueAsString("<div xmlns=\"http://www.w3.org/1999/xhtml\">\n      <!DOCTYPE foo [ <!ENTITY xxe SYSTEM \"file://xxe.txt\">]>\n <p>This is some narrative  &xxe;</p>\n    </div>");
+    });
   }
   
   @Test
-  public void testSerializable() throws IOException {
-    XhtmlNode node = new XhtmlNode();
-    node.setValueAsString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><div xmlns=\"http://www.w3.org/1999/xhtml\">Test</div>");
+  public void testSerializable() {
+    assertDoesNotThrow(() -> {
+      XhtmlNode node = new XhtmlNode();
+      node.setValueAsString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><div xmlns=\"http://www.w3.org/1999/xhtml\">Test</div>");
 
-    ByteArrayOutputStream bout = new ByteArrayOutputStream();
-    ObjectOutputStream oout = new ObjectOutputStream(bout);
-    oout.writeObject(node);
+      ByteArrayOutputStream bout = new ByteArrayOutputStream();
+      ObjectOutputStream oout = new ObjectOutputStream(bout);
+      oout.writeObject(node);
+    });
   }
   
   @Test
-  public void testParseBadChars() throws FHIRFormatError, IOException {
-    XhtmlNode x = new XhtmlParser().parse(BaseTestingUtilities.loadTestResource("xhtml", "bad-chars.html"), "div");
+  public void testParseBadChars() throws FHIRFormatError {
+    assertDoesNotThrow(() -> {
+      XhtmlNode x = new XhtmlParser().parse(BaseTestingUtilities.loadTestResource("xhtml", "bad-chars.html"), "div");
+    });
   }  
   
   @Test
-  public void testParseBadLink1() throws FHIRFormatError, IOException {
-    XhtmlNode x = new XhtmlParser().setMustBeWellFormed(false).parse(BaseTestingUtilities.loadTestResource("xhtml", "bad-link.html"), "div");
+  public void testParseBadLink1() throws FHIRFormatError {
+    assertDoesNotThrow(() -> {
+      XhtmlNode x = new XhtmlParser().setMustBeWellFormed(false).parse(BaseTestingUtilities.loadTestResource("xhtml", "bad-link.html"), "div");
+    });
   }
     
   @Test
@@ -111,9 +117,10 @@ public class XhtmlNodeTest {
   }
 
   @Test
-  public void testParseEntities() throws FHIRFormatError, IOException {
-    XhtmlNode x = new XhtmlParser().parse(BaseTestingUtilities.loadTestResource("xhtml", "entities.html"), "div");
-
+  public void testParseEntities() throws FHIRFormatError {
+    assertDoesNotThrow(() -> {
+      XhtmlNode x = new XhtmlParser().parse(BaseTestingUtilities.loadTestResource("xhtml", "entities.html"), "div");
+    });
   }
 
   @Test
@@ -234,5 +241,61 @@ public class XhtmlNodeTest {
     Assertions.assertEquals("<div>&#x1F637;</div>", html);
   }
 
+  @Test
+  public void testFirstNamedDescendent() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<div><p>test</p></div>", "div");
+    Assertions.assertEquals("test", x.firstNamedDescendent("p").allText());
+  }
+
+  @Test
+  public void testFirstNamedDescendentNotFound() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<div><p>test</p></div>", "div");
+    Assertions.assertNull(x.firstNamedDescendent("span"));
+  }
+
+  @Test
+  public void testFirstNamedDescendentMultipleMatches() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<div><p>first</p><p>second</p></div>", "div");
+    Assertions.assertEquals("first", x.firstNamedDescendent("p").allText());
+  }
+
+  @Test
+  public void testFirstNamedDescendentNestedStructure() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<div><section><p>nested</p></section><p>top-level</p></div>", "div");
+    Assertions.assertEquals("nested", x.firstNamedDescendent("p").allText());
+  }
+
+  @Test
+  public void testFirstNamedDescendentDeepNesting() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<div><a><b><c><span>deep</span></c></b></a></div>", "div");
+    Assertions.assertEquals("deep", x.firstNamedDescendent("span").allText());
+  }
+
+  @Test
+  public void testFirstNamedDescendentEmptyTree() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<div></div>", "div");
+    Assertions.assertNull(x.firstNamedDescendent("p"));
+  }
+
+  @Test
+  public void testFirstNamedDescendentSelfMatch() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<p>self</p>", "p");
+    Assertions.assertNotNull(x.firstNamedDescendent("p"));
+  }
+
+  @Test
+  public void testFirstNamedDescendentWithAttributes() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<div><p class='test'>content</p></div>", "div");
+    XhtmlNode result = x.firstNamedDescendent("p");
+    Assertions.assertEquals("content", result.allText());
+    Assertions.assertEquals("test", result.getAttribute("class"));
+  }
+
+  @Test
+  public void testFirstNamedDescendentMixedContent() throws IOException {
+    XhtmlNode x = new XhtmlParser().parse("<div>text<p>paragraph</p>more text<span>span</span></div>", "div");
+    Assertions.assertEquals("paragraph", x.firstNamedDescendent("p").allText());
+    Assertions.assertEquals("span", x.firstNamedDescendent("span").allText());
+  }
 
 }

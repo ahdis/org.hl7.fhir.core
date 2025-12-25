@@ -14,23 +14,11 @@ import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.exceptions.FHIRFormatError;
 import org.hl7.fhir.r5.extensions.ExtensionDefinitions;
 import org.hl7.fhir.r5.extensions.ExtensionUtilities;
-import org.hl7.fhir.r5.model.Base;
-import org.hl7.fhir.r5.model.CanonicalResource;
-import org.hl7.fhir.r5.model.CanonicalType;
-import org.hl7.fhir.r5.model.CodeSystem;
+import org.hl7.fhir.r5.model.*;
 import org.hl7.fhir.r5.model.CodeSystem.ConceptDefinitionComponent;
-import org.hl7.fhir.r5.model.Constants;
-import org.hl7.fhir.r5.model.ContactDetail;
-import org.hl7.fhir.r5.model.ContactPoint;
 import org.hl7.fhir.r5.model.ContactPoint.ContactPointSystem;
-import org.hl7.fhir.r5.model.DateTimeType;
 import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
-import org.hl7.fhir.r5.model.Extension;
 import org.hl7.fhir.r5.model.Narrative.NarrativeStatus;
-import org.hl7.fhir.r5.model.Reference;
-import org.hl7.fhir.r5.model.Resource;
-import org.hl7.fhir.r5.model.StructureDefinition;
-import org.hl7.fhir.r5.model.UriType;
 import org.hl7.fhir.r5.renderers.utils.RenderingContext;
 import org.hl7.fhir.r5.renderers.utils.Resolver.ResourceReferenceKind;
 import org.hl7.fhir.r5.renderers.utils.Resolver.ResourceWithReference;
@@ -43,6 +31,7 @@ import org.hl7.fhir.r5.utils.xver.XVerExtensionManager;
 import org.hl7.fhir.utilities.MarkedToMoveToAdjunctPackage;
 import org.hl7.fhir.utilities.Utilities;
 import org.hl7.fhir.utilities.VersionUtilities;
+import org.hl7.fhir.utilities.i18n.RenderingI18nContext;
 import org.hl7.fhir.utilities.xhtml.HierarchicalTableGenerator;
 import org.hl7.fhir.utilities.xhtml.HierarchicalTableGenerator.Piece;
 import org.hl7.fhir.utilities.xhtml.NodeType;
@@ -101,6 +90,9 @@ public abstract class ResourceRenderer extends DataRenderer {
    */
   public XhtmlNode buildNarrative(ResourceWrapper dr) throws FHIRFormatError, DefinitionException, FHIRException, IOException, EOperationOutcome {
     XhtmlNode x = new XhtmlNode(NodeType.Element, "div");
+    if (context.getRules() == RenderingContext.GenerationRules.IG_PUBLISHER) {
+      x.attribute("data-fhir", "generated");
+    }
     buildNarrative(new RenderingStatus(), x, dr);
     checkForDuplicateIds(x);
     return x;
@@ -149,6 +141,9 @@ public abstract class ResourceRenderer extends DataRenderer {
    */
   public void renderResource(ResourceWrapper r) throws IOException, FHIRException, EOperationOutcome {  
     XhtmlNode x = new XhtmlNode(NodeType.Element, "div");
+    if (context.getRules() == RenderingContext.GenerationRules.IG_PUBLISHER) {
+      x.attribute("data-fhir", "generated");
+    }
     RenderingStatus status = new RenderingStatus();
     buildNarrative(status, x, r);
     String an = r.fhirType()+"_"+r.getId();
@@ -237,7 +232,7 @@ public abstract class ResourceRenderer extends DataRenderer {
 
   public <T extends Resource> void renderCanonical(RenderingStatus status, XhtmlNode x, Class<T> class_, ResourceWrapper canonical) throws UnsupportedEncodingException, IOException {
     if (!renderPrimitiveWithNoValue(status, x, canonical)) {
-      CanonicalResource target = (CanonicalResource) context.getWorker().fetchResource(class_, canonical.primitiveValue(), canonical.getResourceNative());
+      CanonicalResource target = (CanonicalResource) context.getWorker().fetchResource(class_, canonical.primitiveValue(), null, canonical.getResourceNative());
       if (target != null && target.hasWebPath()) {
         if (canonical.primitiveValue().contains("|")) {
           x.ah(context.prefixLocalHref(target.getWebPath())).tx(target.present()+ context.formatPhrase(RenderingContext.RES_REND_VER) +target.getVersion()+")");
@@ -264,7 +259,7 @@ public abstract class ResourceRenderer extends DataRenderer {
       return "";
     }
     String url = canonical.primitiveValue();
-    Resource target = context.getWorker().fetchResource(Resource.class, url, canonical.getResourceNative());
+    Resource target = context.getWorker().fetchResource(Resource.class, url, null, canonical.getResourceNative());
     if (target == null || !(target instanceof CanonicalResource)) {
       return url;       
     } else {
@@ -337,9 +332,15 @@ public abstract class ResourceRenderer extends DataRenderer {
       return;
     }
     String url = canonical.asStringValue();
-    Resource target = context.getWorker().fetchResource(Resource.class, url, res.getResourceNative());
+    Resource target = context.getWorker().fetchResource(Resource.class, url, null, res.getResourceNative());
     if (target == null || !(target instanceof CanonicalResource)) {
-      x.code().tx(url);       
+      NamingSystem ns = context.getContextUtilities().fetchNamingSystem(url);
+      if (ns != null) {
+        x.code().tx(url);
+        x.tx(" ("+ns.present()+")");
+      } else {
+        x.code().tx(url);
+      }
     } else {
       CanonicalResource cr = (CanonicalResource) target;
       if (!target.hasWebPath()) {
@@ -353,7 +354,7 @@ public abstract class ResourceRenderer extends DataRenderer {
         }
       } else {
         if (url.contains("|")) {
-          x.ah(context.prefixLocalHref(target.getWebPath())).tx(cr.present()+ context.formatPhrase(RenderingContext.RES_REND_VER) +cr.getVersion()+")");
+          x.ah(context.prefixLocalHref(target.getWebPath())).tx(cr.present()+ context.formatPhrase(RenderingContext.RES_REND_VER, cr.getVersion())+")");
         } else {
           x.ah(context.prefixLocalHref(target.getWebPath())).tx(cr.present());
         }
@@ -653,7 +654,7 @@ public abstract class ResourceRenderer extends DataRenderer {
       if (v.startsWith("mailto:")) { 
         x.ah(v).addText(v.substring(7)); 
       } else { 
-        String link = getLinkForCode(v, null, null);
+        String link = getLinkForCode(v, null, null, uri.getResourceNative());
         if (link != null) {  
           x.ah(context.prefixLocalHref(link)).addText(v);
         } else {
@@ -692,11 +693,11 @@ public abstract class ResourceRenderer extends DataRenderer {
    * @param <T>
    */
   protected <T extends Resource> T findCanonical(Class<T> class_, UriType canonical, ResourceWrapper sourceOfReference) {
-    return context.getContext().fetchResource(class_, canonical.asStringValue(), sourceOfReference.getResourceNative());
+    return context.getContext().fetchResource(class_, canonical.asStringValue(), null, sourceOfReference.getResourceNative());
   }
 
   protected <T extends Resource> T findCanonical(Class<T> class_, String canonical, ResourceWrapper sourceOfReference) {
-    return context.getContext().fetchResource(class_, canonical, sourceOfReference.getResourceNative());
+    return context.getContext().fetchResource(class_, canonical, null, sourceOfReference.getResourceNative());
   }
 
 
@@ -749,7 +750,7 @@ public abstract class ResourceRenderer extends DataRenderer {
           return rr;
         }
       }
-      Resource r = context.getWorker().fetchResource(Resource.class, url, version);
+      Resource r = context.getWorker().fetchResource(Resource.class, url, version, resource == null ? null : resource.getResourceNative());
       if (r != null) {
         return new ResourceWithReference(ResourceReferenceKind.EXTERNAL, url, r.getWebPath(), wrap(r));
       }
@@ -1553,4 +1554,48 @@ public abstract class ResourceRenderer extends DataRenderer {
     svg.attribute("height", "20").attribute("width", "20").attribute("viewBox", "0 0 1792 1792").attribute("class", "self-link");
     path.attribute("d", pathData).attribute("fill", "navy");
   }
+
+
+  public static void renderVersionReference(RenderingContext context, Resource tgt, String statedVersion, String actualVersion, boolean fromPackages, XhtmlNode x, boolean fromThisPackage, String type, String none_phrase) {
+    if (statedVersion != null && actualVersion != null && !statedVersion.equals(actualVersion) && fromPackages) {
+      x.attribute("title", context.formatPhrase(RenderingI18nContext.VS_VERSION_WILDCARD_BY_PACKAGE, statedVersion, actualVersion));
+      x.tx("\uD83D\uDCCD");
+      x.tx(actualVersion);
+      x.tx(" → ");
+      x.tx(statedVersion);
+    } else if (statedVersion != null && actualVersion != null && !statedVersion.equals(actualVersion) && fromPackages) {
+      x.attribute("title", context.formatPhrase(RenderingI18nContext.VS_VERSION_WILDCARD, statedVersion, actualVersion));
+      x.tx("\uD83D\uDCCD");
+      x.tx(actualVersion);
+      XhtmlNode span = x.span();
+      span.style("opacity: 0.5");
+      span.tx(" → ");
+      span.tx(statedVersion);
+    } else if (statedVersion != null) {
+      x.attribute("title", context.formatPhrase(RenderingI18nContext.VS_VERSION_STATED, statedVersion));
+      x.tx("\uD83D\uDCCD");
+      x.tx(actualVersion);
+    } else if (fromThisPackage) {
+      x.attribute("title", context.formatPhrase(RenderingI18nContext.VS_VERSION_THIS_PACKAGE));
+      x.tx("\uD83D\uDCE6");
+      x.tx(actualVersion);
+    } else if (fromPackages) {
+      x.attribute("title", context.formatPhrase(RenderingI18nContext.VS_VERSION_BY_PACKAGE, actualVersion));
+      x.tx("\uD83D\uDCE6");
+      x.tx(actualVersion);
+    } else if (actualVersion != null) {
+      x.attribute("title", context.formatPhrase(RenderingI18nContext.VS_VERSION_FOUND, actualVersion));
+      x.style("opacity: 0.5");
+      x.tx("\u23FF");
+      x.tx(actualVersion);
+    } else if (tgt != null) {
+      x.attribute("title", context.formatPhrase(RenderingI18nContext.VS_VERSION_NONE, type));
+      x.tx("\u2205");
+      x.tx(actualVersion);
+    } else {
+      x.attribute("title", context.formatPhrase(RenderingI18nContext.VS_VERSION_NOTHING, type));
+      x.tx(none_phrase == null ? "?" : context.formatPhrase(none_phrase));
+    }
+  }
+
 };

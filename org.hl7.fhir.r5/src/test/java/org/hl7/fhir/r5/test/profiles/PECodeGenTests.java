@@ -18,6 +18,8 @@ import org.hl7.fhir.utilities.npm.NpmPackage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 /**
  * The files in org.hl7.fhir.r5.test.profiles.codegen are generated 
  * by running the validator with these parameters:
@@ -42,18 +44,20 @@ public class PECodeGenTests {
       FilesystemPackageCacheManager pc = new FilesystemPackageCacheManager.Builder().build();
       TestPackageLoader loader = new TestPackageLoader(Utilities.stringSet("StructureDefinition", "ValueSet", "CodeSystem"));
       dkcore = pc.loadPackage("hl7.fhir.dk.core", "3.2.0");
-      ctxt.loadFromPackage(dkcore, loader);
+      ctxt.getManager().loadFromPackage(dkcore, loader);
       emed = pc.loadPackage("hl7.fhir.uv.emedicinal-product-info", "1.0.0");
-      ctxt.loadFromPackage(emed, loader);      
+      ctxt.getManager().loadFromPackage(emed, loader);
     }
   }
 
 
   @Test
-  public void testConstruct1() throws IOException {
-    load();
-    var patient = new DkCorePatient(ctxt).setDEcpr(new DkCoreDeCprIdentifier().setSystem(DkCoreDeCprIdentifier.DkCoreDeCPRValueSet.URNOID122081761613).setValue(UUID.randomUUID().toString()));
-    var pat = patient.build(ctxt);
+  void testConstruct1() {
+    assertDoesNotThrow(() -> {
+      load();
+      var patient = new DkCorePatient(ctxt).setDEcpr(new DkCoreDeCprIdentifier().setSystem(DkCoreDeCprIdentifier.DkCoreDeCPRValueSet.URNOID122081761613).setValue(UUID.randomUUID().toString()));
+      var pat = patient.build(ctxt);
+    });
   }
   
   @Test

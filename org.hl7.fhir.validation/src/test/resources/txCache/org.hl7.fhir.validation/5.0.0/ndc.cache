@@ -1,9 +1,11 @@
 -------------------------------------------------------------------------------------
 {"code" : {
-  "system" : "http://hl7.org/fhir/sid/ndc",
-  "code" : "2501-813-16",
-  "display" : "Timoptic 5mg/ml solution"
-}, "valueSet" :null, "langs":"en-US", "useServer":"true", "useClient":"false", "guessSystem":"false", "activeOnly":"false", "membershipOnly":"false", "displayWarningMode":"false", "versionFlexible":"true", "profile": {
+  "coding" : [{
+    "system" : "http://hl7.org/fhir/sid/ndc",
+    "code" : "2501-813-16",
+    "display" : "Timoptic 5mg/ml solution"
+  }]
+}, "langs":"en-US", "useServer":"true", "useClient":"false", "guessSystem":"false", "activeOnly":"false", "membershipOnly":"false", "displayWarningMode":"false", "versionFlexible":"true", "profile": {
   "resourceType" : "Parameters",
   "parameter" : [{
     "name" : "profile-url",
@@ -15,12 +17,11 @@
   }]
 }}####
 v: {
-  "code" : "2501-813-16",
-  "system" : "http://hl7.org/fhir/sid/ndc",
   "severity" : "error",
   "error" : "Unknown code '2501-813-16' in the CodeSystem 'http://hl7.org/fhir/sid/ndc' version ''",
   "class" : "UNKNOWN",
   "server" : "https://tx-dev.fhir.org/r5",
+  "diagnostics" : "0 0 : start\r\n0 0     : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n0 0     : 0ms  : Parameters: disp-lang=en-US, default-to-latest\r\n0 0     : 0ms  : Prepare include: \"()\"\r\n0 0     : 0ms  : Validate \"[http://hl7.org/fhir/sid/ndc#2501-813-16 (\"Timoptic 5mg/ml solution\")]\"\r\n0 0     : 0ms  : Check \"http://hl7.org/fhir/sid/ndc#2501-813-16\"\r\n0 0     : 0ms  : Using CodeSystem \"http://hl7.org/fhir/sid/ndc|\" (content = complete)\r\n",
   "unknown-systems" : "",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -42,8 +43,8 @@ v: {
       }],
       "text" : "Unknown code '2501-813-16' in the CodeSystem 'http://hl7.org/fhir/sid/ndc' version ''"
     },
-    "location" : ["Coding.code"],
-    "expression" : ["Coding.code"]
+    "location" : ["CodeableConcept.coding[0].code"],
+    "expression" : ["CodeableConcept.coding[0].code"]
   },
   {
     "extension" : [{
@@ -59,8 +60,8 @@ v: {
       }],
       "text" : "Code \"2501-813-16\" not found in NDC"
     },
-    "location" : ["Coding.code"],
-    "expression" : ["Coding.code"]
+    "location" : ["CodeableConcept.coding[0].code"],
+    "expression" : ["CodeableConcept.coding[0].code"]
   }]
 }
 

@@ -43,25 +43,12 @@ import org.hl7.fhir.exceptions.FHIRFormatError;
 import org.hl7.fhir.r5.context.IWorkerContext;
 import org.hl7.fhir.r5.extensions.ExtensionDefinitions;
 import org.hl7.fhir.r5.extensions.ExtensionUtilities;
-import org.hl7.fhir.r5.model.BooleanType;
-import org.hl7.fhir.r5.model.CanonicalType;
-import org.hl7.fhir.r5.model.CodeSystem;
-import org.hl7.fhir.r5.model.DateTimeType;
-import org.hl7.fhir.r5.model.StringType;
-import org.hl7.fhir.r5.model.IntegerType;
+import org.hl7.fhir.r5.model.*;
 import org.hl7.fhir.r5.model.Enumerations.FilterOperator;
 import org.hl7.fhir.r5.model.Enumerations.PublicationStatus;
 import org.hl7.fhir.r5.model.Parameters.ParametersParameterComponent;
-import org.hl7.fhir.r5.model.Identifier;
-import org.hl7.fhir.r5.model.Meta;
-import org.hl7.fhir.r5.model.Parameters;
-import org.hl7.fhir.r5.model.UriType;
-import org.hl7.fhir.r5.model.ValueSet;
 import org.hl7.fhir.r5.model.CodeSystem.ConceptDefinitionComponent;
 import org.hl7.fhir.r5.model.CodeSystem.ConceptPropertyComponent;
-import org.hl7.fhir.r5.model.CodeType;
-import org.hl7.fhir.r5.model.Coding;
-import org.hl7.fhir.r5.model.DataType;
 import org.hl7.fhir.r5.model.ValueSet.ConceptReferenceComponent;
 import org.hl7.fhir.r5.model.ValueSet.ConceptSetComponent;
 import org.hl7.fhir.r5.model.ValueSet.ValueSetComposeComponent;
@@ -74,6 +61,7 @@ import org.hl7.fhir.r5.terminologies.utilities.TerminologyCache.SourcedValueSet;
 import org.hl7.fhir.r5.utils.CanonicalResourceUtilities;
 
 import org.hl7.fhir.r5.utils.UserDataNames;
+import org.hl7.fhir.utilities.NaturalOrderComparator;
 import org.hl7.fhir.utilities.StandardsStatus;
 import org.hl7.fhir.utilities.Utilities;
 import org.hl7.fhir.utilities.VersionUtilities;
@@ -91,7 +79,7 @@ public class ValueSetUtilities extends TerminologyUtilities {
       if (c == 0) {
         String ver1 = o1.getVersion();
         String ver2 = o2.getVersion();
-        c = VersionUtilities.compareVersions(ver1, ver2);
+        c = compareVersions(ver1, ver2);
         if (c == 0) {
           String d1 = o1.getDateElement().asStringValue();
           String d2 = o2.getDateElement().asStringValue();
@@ -99,6 +87,22 @@ public class ValueSetUtilities extends TerminologyUtilities {
         }
       }
       return c;
+    }
+
+    private int compareVersions(String v1, String v2) {
+      if (v1 == null && v2 == null) {
+        return 0;
+      } else if (v1 == null) {
+        return -1; // this order is deliberate
+      } else if (v2 == null) {
+        return 1;
+      } else if (VersionUtilities.isSemVer(v1) && VersionUtilities.isSemVer(v2)) {
+        return VersionUtilities.compareVersions(v1, v2);
+      } else if (Utilities.isInteger(v1) && Utilities.isInteger(v2)) {
+        return Integer.compare(Integer.parseInt(v1), Integer.parseInt(v2));
+      } else {
+        return new NaturalOrderComparator<String>().compare(v1, v2);
+      }
     }
 
     private int compareString(String s1, String s2) {
@@ -111,33 +115,49 @@ public class ValueSetUtilities extends TerminologyUtilities {
 
   }
 
-
   public static boolean isServerSide(String url) {
-    return Utilities.existsInList(url, "http://hl7.org/fhir/sid/cvx");
+    // this is required to work around placeholders or bad definitions in THO (cvx)
+    return Utilities.existsInList(url,
+      "http://hl7.org/fhir/sid/cvx",
+      "http://loinc.org",
+      "http://snomed.info/sct",
+      "http://www.nlm.nih.gov/research/umls/rxnorm",
+      "http://www.ama-assn.org/go/cpt",
+      "http://hl7.org/fhir/ndfrt",
+      "http://hl7.org/fhir/sid/ndc", 
+      "http://hl7.org/fhir/sid/icd-10",
+      "http://hl7.org/fhir/sid/icd-9-cm",
+      "http://hl7.org/fhir/sid/icd-10-cm");
   }
-  
-  public static ValueSet makeShareable(ValueSet vs) {
+
+  public static boolean isServerSide(Coding c) {
+    return isServerSide(c.getSystem());
+  }
+
+  public static boolean hasServerSide(CodeableConcept cc) {
+    for (Coding c : cc.getCoding()) {
+      if (isServerSide(c)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static ValueSet makeShareable(ValueSet vs, boolean extension) {
     if (!vs.hasExperimental()) {
       vs.setExperimental(false);
     }
-    if (!vs.hasMeta())
-      vs.setMeta(new Meta());
-    for (UriType t : vs.getMeta().getProfile()) 
-      if (t.getValue().equals("http://hl7.org/fhir/StructureDefinition/shareablevalueset"))
-        return vs;
-    vs.getMeta().getProfile().add(new CanonicalType("http://hl7.org/fhir/StructureDefinition/shareablevalueset"));
+    if (extension) {
+      if (!vs.hasMeta())
+        vs.setMeta(new Meta());
+      for (UriType t : vs.getMeta().getProfile())
+        if (t.getValue().equals("http://hl7.org/fhir/StructureDefinition/shareablevalueset"))
+          return vs;
+      vs.getMeta().getProfile().add(new CanonicalType("http://hl7.org/fhir/StructureDefinition/shareablevalueset"));
+    }
     return vs;
   }
 
-  public static boolean makeVSShareable(ValueSet vs) {
-    if (!vs.hasMeta())
-      vs.setMeta(new Meta());
-    for (UriType t : vs.getMeta().getProfile()) 
-      if (t.getValue().equals("http://hl7.org/fhir/StructureDefinition/shareablevalueset"))
-        return false;
-    vs.getMeta().getProfile().add(new CanonicalType("http://hl7.org/fhir/StructureDefinition/shareablevalueset"));
-    return true;
-  }
 
   public static void checkShareable(ValueSet vs) {
     if (!vs.hasMeta())
@@ -173,7 +193,7 @@ public class ValueSetUtilities extends TerminologyUtilities {
     vs.addIdentifier().setSystem("urn:ietf:rfc:3986").setValue(oid);
   }
 
-  public static void markStatus(ValueSet vs, String wg, StandardsStatus status, String pckage, String fmm, IWorkerContext context, String normativeVersion) throws FHIRException {
+  public static void markStatus(ValueSet vs, String wg, StandardsStatus status, String fmm, IWorkerContext context, String normativeVersion) throws FHIRException {
     if (vs.hasUserData(UserDataNames.render_external_link))
       return;
     
@@ -187,13 +207,6 @@ public class ValueSetUtilities extends TerminologyUtilities {
       StandardsStatus ss = ExtensionUtilities.getStandardsStatus(vs);
       if (ss == null || ss.isLowerThan(status)) 
         ExtensionUtilities.setStandardsStatus(vs, status, normativeVersion);
-      if (pckage != null) {
-        if (!vs.hasUserData(UserDataNames.kindling_ballot_package))        
-          vs.setUserData(UserDataNames.kindling_ballot_package, pckage);
-        else if (!pckage.equals(vs.getUserString(UserDataNames.kindling_ballot_package)))
-          if (!"infrastructure".equals(vs.getUserString(UserDataNames.kindling_ballot_package)))
-          log.warn("Value Set "+vs.getUrl()+": ownership clash "+pckage+" vs "+vs.getUserString(UserDataNames.kindling_ballot_package));
-      }
       if (status == StandardsStatus.NORMATIVE) {
         vs.setStatus(PublicationStatus.ACTIVE);
       }
@@ -205,13 +218,13 @@ public class ValueSetUtilities extends TerminologyUtilities {
       }
     }
     if (vs.hasUserData(UserDataNames.TX_ASSOCIATED_CODESYSTEM))
-      CodeSystemUtilities.markStatus((CodeSystem) vs.getUserData(UserDataNames.TX_ASSOCIATED_CODESYSTEM), wg, status, pckage, fmm, normativeVersion);
+      CodeSystemUtilities.markStatus((CodeSystem) vs.getUserData(UserDataNames.TX_ASSOCIATED_CODESYSTEM), wg, status, fmm, normativeVersion);
     else if (status == StandardsStatus.NORMATIVE && context != null) {
       for (ConceptSetComponent csc : vs.getCompose().getInclude()) {
         if (csc.hasSystem()) {
           CodeSystem cs = context.fetchCodeSystem(csc.getSystem());
           if (cs != null) {
-            CodeSystemUtilities.markStatus(cs, wg, status, pckage, fmm, normativeVersion);
+            CodeSystemUtilities.markStatus(cs, wg, status, fmm, normativeVersion);
           }
         }
       }
@@ -387,7 +400,7 @@ public class ValueSetUtilities extends TerminologyUtilities {
     Set<String> systems = new HashSet<>();
     for (ConceptSetComponent inc : vs.getCompose().getInclude()) {
       for (CanonicalType ct : inc.getValueSet()) {
-        ValueSet vsr = ctxt.findTxResource(ValueSet.class, ct.asStringValue(), vs);
+        ValueSet vsr = ctxt.findTxResource(ValueSet.class, ct.asStringValue(), null, vs);
         if (vsr != null) {
           systems.addAll(listSystems(ctxt, vsr));
         }

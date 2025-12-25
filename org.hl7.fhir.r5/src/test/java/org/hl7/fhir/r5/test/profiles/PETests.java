@@ -57,6 +57,8 @@ import org.hl7.fhir.utilities.npm.NpmPackage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 public class PETests {
 
 
@@ -68,12 +70,12 @@ public class PETests {
       ctxt = TestingUtilities.getSharedWorkerContext();
       FilesystemPackageCacheManager pc = new FilesystemPackageCacheManager.Builder().build();
       NpmPackage npm = pc.loadPackage("hl7.fhir.us.core", "5.0.0");
-      ctxt.loadFromPackage(npm, new TestPackageLoader(Utilities.stringSet("StructureDefinition" )));
+      ctxt.getManager().loadFromPackage(npm, new TestPackageLoader(Utilities.stringSet("StructureDefinition" )));
       
-      ctxt.cacheResource(new JsonParser().parse(TestingUtilities.loadTestResource("r5", "profiles", "pe-extension-simple.json")));
-      ctxt.cacheResource(new JsonParser().parse(TestingUtilities.loadTestResource("r5", "profiles", "pe-extension-complex.json")));
-      ctxt.cacheResource(new JsonParser().parse(TestingUtilities.loadTestResource("r5", "profiles", "pe-profile2.json")));
-      ctxt.cacheResource(new JsonParser().parse(TestingUtilities.loadTestResource("r5", "profiles", "pe-profile1.json")));
+      ctxt.getManager().cacheResource(new JsonParser().parse(TestingUtilities.loadTestResource("r5", "profiles", "pe-extension-simple.json")));
+      ctxt.getManager().cacheResource(new JsonParser().parse(TestingUtilities.loadTestResource("r5", "profiles", "pe-extension-complex.json")));
+      ctxt.getManager().cacheResource(new JsonParser().parse(TestingUtilities.loadTestResource("r5", "profiles", "pe-profile2.json")));
+      ctxt.getManager().cacheResource(new JsonParser().parse(TestingUtilities.loadTestResource("r5", "profiles", "pe-profile1.json")));
     }
   }
 
@@ -299,11 +301,13 @@ public class PETests {
   }
 
   @Test
-  public void dumpUSPatientCore() throws IOException {
-    load();
-    
-    PEDefinition pe = new PEBuilder(ctxt, PEElementPropertiesPolicy.NONE, false).buildPEDefinition("http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient");
-    dump(pe, "");
+  void dumpUSPatientCore() {
+    assertDoesNotThrow(() -> {
+      load();
+
+      PEDefinition pe = new PEBuilder(ctxt, PEElementPropertiesPolicy.NONE, false).buildPEDefinition("http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient");
+      dump(pe, "");
+    });
   }
 
 

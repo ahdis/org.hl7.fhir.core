@@ -414,12 +414,12 @@ public class CodeSystemUtilities extends TerminologyUtilities {
   
   public static boolean isInactive(@Nonnull CodeSystem cs, @Nonnull ConceptDefinitionComponent def) throws FHIRException {
     StandardsStatus ss = ExtensionUtilities.getStandardsStatus(def);
-    if (ss == StandardsStatus.DEPRECATED || ss == StandardsStatus.WITHDRAWN) {
+    if (ss == StandardsStatus.WITHDRAWN) {
       return true;
     }
     for (ConceptPropertyComponent p : def.getProperty()) {
       if ("status".equals(p.getCode()) && p.hasValueStringType()) {
-        return "inactive".equals(p.getValueStringType().primitiveValue()) || "retired".equals(p.getValueStringType().primitiveValue()) || "deprecated".equals(p.getValueStringType().primitiveValue());
+        return Utilities.existsInList(p.getValueStringType().primitiveValue(), "inactive", "retired");
       }
       if ("inactive".equals(p.getCode()) && p.hasValueBooleanType()) {
         return p.getValueBooleanType().getValue();
@@ -466,34 +466,22 @@ public class CodeSystemUtilities extends TerminologyUtilities {
     return null;
   }
 
-  public static CodeSystem makeShareable(@Nonnull CodeSystem cs) {
-    if (!cs.hasExperimental()) {
-      cs.setExperimental(false);
-    }
-
-    if (!cs.hasMeta())
-      cs.setMeta(new Meta());
-    for (UriType t : cs.getMeta().getProfile()) 
-      if ("http://hl7.org/fhir/StructureDefinition/shareablecodesystem".equals(t.getValue()))
-        return cs;
-    cs.getMeta().getProfile().add(new CanonicalType("http://hl7.org/fhir/StructureDefinition/shareablecodesystem"));
-    return cs;
-  }
-
-  public static boolean checkMakeShareable(@Nonnull CodeSystem cs) {
+  public static boolean makeShareable(@Nonnull CodeSystem cs, boolean extension) {
     boolean changed = false;
     if (!cs.hasExperimental()) {
       cs.setExperimental(false);
       changed = true;
     }
 
-    if (!cs.hasMeta())
-      cs.setMeta(new Meta());
-    for (UriType t : cs.getMeta().getProfile()) 
-      if ("http://hl7.org/fhir/StructureDefinition/shareablecodesystem".equals(t.getValue()))
-        return changed;
-    cs.getMeta().getProfile().add(new CanonicalType("http://hl7.org/fhir/StructureDefinition/shareablecodesystem"));
-    return true;
+    if (extension) {
+      if (!cs.hasMeta())
+        cs.setMeta(new Meta());
+      for (UriType t : cs.getMeta().getProfile())
+        if ("http://hl7.org/fhir/StructureDefinition/shareablecodesystem".equals(t.getValue()))
+          return changed;
+      cs.getMeta().getProfile().add(new CanonicalType("http://hl7.org/fhir/StructureDefinition/shareablecodesystem"));
+    }
+    return changed;
   }
 
   public static void setOID(@Nonnull CodeSystem cs, @Nonnull String oid) {
@@ -576,7 +564,7 @@ public class CodeSystemUtilities extends TerminologyUtilities {
     return false;
   }
 
-  public static void markStatus(@Nonnull CodeSystem cs, String wg, StandardsStatus status, String pckage, String fmm, String normativeVersion) throws FHIRException {
+  public static void markStatus(@Nonnull CodeSystem cs, String wg, StandardsStatus status, String fmm, String normativeVersion) throws FHIRException {
     if (wg != null) {
       if (!ExtensionUtilities.hasExtension(cs, ExtensionDefinitions.EXT_WORKGROUP) || 
           (Utilities.existsInList(ExtensionUtilities.readStringExtension(cs, ExtensionDefinitions.EXT_WORKGROUP), "fhir", "vocab") && !Utilities.existsInList(wg, "fhir", "vocab"))) {
@@ -587,13 +575,6 @@ public class CodeSystemUtilities extends TerminologyUtilities {
       StandardsStatus ss = ExtensionUtilities.getStandardsStatus(cs);
       if (ss == null || ss.isLowerThan(status)) 
         ExtensionUtilities.setStandardsStatus(cs, status, normativeVersion);
-      if (pckage != null) {
-        if (!cs.hasUserData(UserDataNames.kindling_ballot_package))
-          cs.setUserData(UserDataNames.kindling_ballot_package, pckage);
-        else if (!pckage.equals(cs.getUserString(UserDataNames.kindling_ballot_package)))
-          if (!"infrastructure".equals(cs.getUserString(UserDataNames.kindling_ballot_package)))
-            log.warn("Code System "+cs.getUrl()+": ownership clash "+pckage+" vs "+cs.getUserString(UserDataNames.kindling_ballot_package));
-      }
       if (status == StandardsStatus.NORMATIVE) {
         cs.setStatus(PublicationStatus.ACTIVE);
       }
@@ -906,22 +887,22 @@ public class CodeSystemUtilities extends TerminologyUtilities {
     if (value instanceof CodeType) {
       return PropertyType.CODE;
     }
-    if (value instanceof CodeType) {
+    if (value instanceof Coding) {
       return PropertyType.CODING;
     }
-    if (value instanceof CodeType) {
+    if (value instanceof StringType) {
       return PropertyType.STRING;
     }
-    if (value instanceof CodeType) {
+    if (value instanceof IntegerType) {
       return PropertyType.INTEGER;
     }
-    if (value instanceof CodeType) {
+    if (value instanceof BooleanType) {
       return PropertyType.BOOLEAN;
     }
-    if (value instanceof CodeType) {
+    if (value instanceof DateTimeType) {
       return PropertyType.DATETIME;
     }
-    if (value instanceof CodeType) {
+    if (value instanceof DecimalType) {
       return PropertyType.DECIMAL;
     }
     throw new FHIRException("Unsupported property value for a CodeSystem Property: "+value.fhirType());
