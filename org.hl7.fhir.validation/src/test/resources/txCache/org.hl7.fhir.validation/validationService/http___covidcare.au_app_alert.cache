@@ -3,7 +3,7 @@
   "system" : "http://covidcare.au/app/alert",
   "code" : "trendNegative",
   "display" : "CovidCare: Vital signs trend negative alert: re-check recommended"
-}, "valueSet" :null, "langs":"en", "useServer":"true", "useClient":"false", "guessSystem":"false", "activeOnly":"false", "membershipOnly":"false", "displayWarningMode":"false", "versionFlexible":"true", "profile": {
+}, "valueSet" :null, "langs":"en", "useServer":"true", "useClient":"false", "guessSystem":"false", "noAbstract":"false", "activeOnly":"false", "membershipOnly":"false", "displayWarningMode":"false", "versionFlexible":"true", "profile": {
   "resourceType" : "Parameters",
   "parameter" : [{
     "name" : "profile-url",
@@ -25,7 +25,6 @@ v: {
   "error" : "A definition for CodeSystem 'http://covidcare.au/app/alert' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
   "server" : "https://tx-dev.fhir.org/r4",
-  "diagnostics" : "0 0 : start\r\n15 15   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n15 0    : 0ms  : Parameters: disp-lang=en, default-to-latest\r\n15 0    : 0ms  : Version Rules: system-version:http://snomed.info/sct#http://snomed.info/sct/900000000000207008\r\n15 0    : 0ms  : Prepare include: \"()\"\r\n15 0    : 0ms  : Validate \"[http://covidcare.au/app/alert#trendNegative (\"CovidCare: Vital signs trend negative alert: re-check recommended\")]\"\r\n15 0    : 0ms  : Check \"http://covidcare.au/app/alert#trendNegative\"\r\n15 0    : 0ms  : Didn't find CodeSystem \"http://covidcare.au/app/alert\"\r\n",
   "unknown-systems" : "http://covidcare.au/app/alert",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -47,7 +46,6 @@ v: {
       }],
       "text" : "A definition for CodeSystem 'http://covidcare.au/app/alert' could not be found, so the code cannot be validated"
     },
-    "location" : ["Coding.system"],
     "expression" : ["Coding.system"]
   }]
 }

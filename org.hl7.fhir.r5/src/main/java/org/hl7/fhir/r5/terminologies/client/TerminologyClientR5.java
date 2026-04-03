@@ -46,8 +46,10 @@ import org.hl7.fhir.r5.model.TerminologyCapabilities;
 import org.hl7.fhir.r5.model.ValueSet;
 import org.hl7.fhir.r5.terminologies.client.TerminologyClientManager.ITerminologyClientFactory;
 import org.hl7.fhir.r5.utils.client.FHIRToolingClient;
+import org.hl7.fhir.r5.utils.client.ResourceFormat;
 import org.hl7.fhir.r5.utils.client.network.ClientHeaders;
 import org.hl7.fhir.utilities.FhirPublication;
+import org.hl7.fhir.utilities.ITerminologyRequestIdProvider;
 import org.hl7.fhir.utilities.ToolingClientLogger;
 import org.hl7.fhir.utilities.Utilities;
 import org.hl7.fhir.utilities.http.HTTPHeader;
@@ -199,6 +201,18 @@ public class TerminologyClientR5 implements ITerminologyClient {
   }
 
   @Override
+  public ITerminologyClient setFormat(ResourceFormat fmt) throws FHIRException {
+    this.client.setPreferredResourceFormat(fmt);
+    return this;
+  }
+
+  @Override
+  public ITerminologyClient setRequestIdProvider(ITerminologyRequestIdProvider provider) throws FHIRException {
+    this.client.setRequestIdProvider(provider);
+    return this;
+  }
+
+  @Override
   public int getRetryCount() throws FHIRException {
     return client.getRetryCount();
   }
@@ -284,6 +298,11 @@ public class TerminologyClientR5 implements ITerminologyClient {
   @Override
   public Parameters translate(Parameters params) throws FHIRException {
     return client.translate(params);
+  }
+
+  @Override
+  public Parameters doRelated(Parameters params) throws FHIRException {
+    return client.doRelated(params);
   }
 
   @Override

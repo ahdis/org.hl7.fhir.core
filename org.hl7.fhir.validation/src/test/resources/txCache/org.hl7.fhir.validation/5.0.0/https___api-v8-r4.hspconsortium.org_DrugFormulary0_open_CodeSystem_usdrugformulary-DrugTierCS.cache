@@ -3,7 +3,7 @@
   "system" : "https://api-v8-r4.hspconsortium.org/DrugFormulary0/open/CodeSystem/usdrugformulary-DrugTierCS",
   "code" : "BRAND",
   "display" : "Brand"
-}, "valueSet" :null, "langs":"en-US", "useServer":"true", "useClient":"false", "guessSystem":"false", "activeOnly":"false", "membershipOnly":"false", "displayWarningMode":"false", "versionFlexible":"false", "profile": {
+}, "valueSet" :null, "langs":"en-US", "useServer":"true", "useClient":"false", "guessSystem":"false", "noAbstract":"false", "activeOnly":"false", "membershipOnly":"false", "displayWarningMode":"false", "versionFlexible":"false", "profile": {
   "resourceType" : "Parameters",
   "parameter" : [{
     "name" : "profile-url",
@@ -21,7 +21,6 @@ v: {
   "error" : "A definition for CodeSystem 'https://api-v8-r4.hspconsortium.org/DrugFormulary0/open/CodeSystem/usdrugformulary-DrugTierCS' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
   "server" : "https://tx-dev.fhir.org/r5",
-  "diagnostics" : "0 0 : start\r\n16 16   : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n16 0    : 0ms  : Parameters: disp-lang=en-US\r\n16 0    : 0ms  : Prepare include: \"()\"\r\n16 0    : 0ms  : Validate \"[https://api-v8-r4.hspconsortium.org/DrugFormulary0/open/CodeSystem/usdrugformulary-DrugTierCS#BRAND (\"Brand\")]\"\r\n16 0    : 0ms  : Check \"https://api-v8-r4.hspconsortium.org/DrugFormulary0/open/CodeSystem/usdrugformulary-DrugTierCS#BRAND\"\r\n16 0    : 0ms  : Didn't find CodeSystem \"https://api-v8-r4.hspconsortium.org/DrugFormulary0/open/CodeSystem/usdrugformulary-DrugTierCS\"\r\n",
   "unknown-systems" : "https://api-v8-r4.hspconsortium.org/DrugFormulary0/open/CodeSystem/usdrugformulary-DrugTierCS",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -43,7 +42,6 @@ v: {
       }],
       "text" : "A definition for CodeSystem 'https://api-v8-r4.hspconsortium.org/DrugFormulary0/open/CodeSystem/usdrugformulary-DrugTierCS' could not be found, so the code cannot be validated"
     },
-    "location" : ["Coding.system"],
     "expression" : ["Coding.system"]
   }]
 }

@@ -3,7 +3,7 @@
   "system" : "http://fhir.whatever.com/codes/AllergyClinicalStatus",
   "code" : "active",
   "display" : "Active"
-}, "valueSet" :null, "langs":"en-US", "useServer":"true", "useClient":"false", "guessSystem":"false", "activeOnly":"false", "membershipOnly":"false", "displayWarningMode":"false", "versionFlexible":"false", "profile": {
+}, "valueSet" :null, "langs":"en-US", "useServer":"true", "useClient":"false", "guessSystem":"false", "noAbstract":"false", "activeOnly":"false", "membershipOnly":"false", "displayWarningMode":"false", "versionFlexible":"false", "profile": {
   "resourceType" : "Parameters",
   "parameter" : [{
     "name" : "profile-url",
@@ -21,7 +21,6 @@ v: {
   "error" : "A definition for CodeSystem 'http://fhir.whatever.com/codes/AllergyClinicalStatus' could not be found, so the code cannot be validated",
   "class" : "CODESYSTEM_UNSUPPORTED",
   "server" : "https://tx-dev.fhir.org/r4",
-  "diagnostics" : "0 0 : start\r\n0 0     : 0ms  : Analysing http://hl7.org/fhir/ValueSet/@all for validation purposes\r\n0 0     : 0ms  : Parameters: disp-lang=en-US\r\n0 0     : 0ms  : Prepare include: \"()\"\r\n0 0     : 0ms  : Validate \"[http://fhir.whatever.com/codes/AllergyClinicalStatus#active (\"Active\")]\"\r\n0 0     : 0ms  : Check \"http://fhir.whatever.com/codes/AllergyClinicalStatus#active\"\r\n0 0     : 0ms  : Didn't find CodeSystem \"http://fhir.whatever.com/codes/AllergyClinicalStatus\"\r\n",
   "unknown-systems" : "http://fhir.whatever.com/codes/AllergyClinicalStatus",
   "issues" : {
   "resourceType" : "OperationOutcome",
@@ -43,7 +42,6 @@ v: {
       }],
       "text" : "A definition for CodeSystem 'http://fhir.whatever.com/codes/AllergyClinicalStatus' could not be found, so the code cannot be validated"
     },
-    "location" : ["Coding.system"],
     "expression" : ["Coding.system"]
   }]
 }

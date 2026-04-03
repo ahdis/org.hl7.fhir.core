@@ -20,7 +20,6 @@ import org.hl7.fhir.r5.model.TerminologyCapabilities.TerminologyCapabilitiesCode
 import org.hl7.fhir.r5.model.TerminologyCapabilities.TerminologyCapabilitiesExpansionParameterComponent;
 import org.hl7.fhir.r5.terminologies.utilities.TerminologyCache;
 
-import org.hl7.fhir.utilities.ENoDump;
 import org.hl7.fhir.utilities.MarkedToMoveToAdjunctPackage;
 import org.hl7.fhir.utilities.VersionUtilities;
 
@@ -267,11 +266,7 @@ public class TerminologyClientContext {
   }
 
   public boolean supportsSystem(String system) throws IOException {
-    try {
-      new JsonParser().setOutputStyle(IParser.OutputStyle.PRETTY).compose(new FileOutputStream("/Users/grahamegrieve/temp/txcaps.json"), txcaps);
-    } catch (IOException e) {
 
-    }
     for (TerminologyCapabilitiesCodeSystemComponent tccs : txcaps.getCodeSystem()) {
       if (system.equals(tccs.getUri()) || (tccs.hasVersion() && system.equals(CanonicalType.urlWithVersion(tccs.getUri(), tccs.getVersionFirstRep().getCode())))) {
         return true;
