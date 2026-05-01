@@ -845,10 +845,8 @@ public class ProfileUtilities {
             if (!e.hasUserData(UserDataNames.SNAPSHOT_GENERATED_IN_SNAPSHOT) && e.getPath().contains(".")) {
               ElementDefinition existing = getElementInCurrentContext(e.getPath(), derived.getSnapshot().getElement());
               if (existing != null) {
-                // this shouldn't arise - there is a match, but it's not tracked.
-                throw new Error("There is a bug in the code. Please report this as a GitHub issue, along with enough information to reproduce the problem (7cd78da1-8707-4be9-9bd1-9bfbea2cff2c)");
-                // the old code that was here is wrong somehow - exactly how depends on why we would end up here.
-                // updateFromDefinition(existing, e, profileName, false, url, base, derived, "StructureDefinition.differential.element["+i+"]", mappingDetails, false);
+                e.setUserData(UserDataNames.SNAPSHOT_GENERATED_IN_SNAPSHOT, existing);
+                updateFromDefinition(existing, e, profileName, false, url, base, derived, "StructureDefinition.differential.element["+i+"]", mappingDetails, false);
               } else {
                 int insertionPoint = findLastChildForParent(e.getPath(), derived.getSnapshot().getElement());
                 ElementDefinition outcome = updateURLs(url, webUrl, e.copy(), true);
@@ -3946,8 +3944,8 @@ public class ProfileUtilities {
         throw new FHIRException(context.formatMessage(I18nConstants.UNABLE_TO_RESOLVE_PROFILE__IN_ELEMENT_, sdNs(ed.getType().get(0).getWorkingCode()), ed.getPath()));
       ccmp = new ElementDefinitionComparer(false, profile, profile.getSnapshot().getElement(), child.getSelf().getType().get(0).getWorkingCode(), child.getSelf().getPath().length(), cmp.name, profile.present());
     } else if (ed.getPath().endsWith("[x]") && !child.getSelf().getPath().endsWith("[x]")) {
-      String edLastNode = ed.getPath().replaceAll("(.*\\.)*(.*)", "$2");
-      String childLastNode = child.getSelf().getPath().replaceAll("(.*\\.)*(.*)", "$2");
+      String edLastNode = Utilities.pathTail(ed.getPath());
+      String childLastNode = Utilities.pathTail(child.getSelf().getPath());
       String p = childLastNode.substring(edLastNode.length()-3);
       if (isPrimitive(Utilities.uncapitalize(p)))
         p = Utilities.uncapitalize(p);
@@ -4811,12 +4809,15 @@ public class ProfileUtilities {
     if (!c.hasExpression()) {
       return null;
     }
+    fpe.setAllowUknownFunctions(true);
     ExpressionNode expr = null;
     try {
       expr = fpe.parse(c.getExpression());
     } catch (Exception e) {
+      fpe.setAllowUknownFunctions(false);
       return null;
     }
+    fpe.setAllowUknownFunctions(false);
     if (expr.getKind() != Kind.Group || expr.getOpNext() == null || !(expr.getOperation() == Operation.Equals || expr.getOperation() == Operation.LessOrEqual)) {
       return null;      
     }
