@@ -31,6 +31,8 @@ import org.hl7.fhir.r5.utils.EOperationOutcome;
 import org.hl7.fhir.utilities.CommaSeparatedStringBuilder;
 import org.hl7.fhir.utilities.MarkedToMoveToAdjunctPackage;
 import org.hl7.fhir.utilities.Utilities;
+import org.hl7.fhir.utilities.VersionUtilities;
+import org.hl7.fhir.utilities.i18n.RenderingI18nContext;
 import org.hl7.fhir.utilities.xhtml.NodeType;
 import org.hl7.fhir.utilities.xhtml.XhtmlNode;
 
@@ -333,23 +335,27 @@ public class ConceptMapRenderer extends TerminologyRenderer {
     }
 
     XhtmlNode p = x.para();
-    p.tx(context.formatPhrase(RenderingContext.CONC_MAP_FROM) + " ");
-    if (cm.hasSourceScope())
-      AddVsRef(cm.getSourceScope().primitiveValue(), cm.getSourceScope(), p, cm);
-    else
-      p.tx(context.formatPhrase(RenderingContext.CONC_MAP_NOT_SPEC));
-    p.tx(" "+ (context.formatPhrase(RenderingContext.CONC_MAP_TO) + " "));
-    if (cm.hasTargetScope())
-      AddVsRef(cm.getTargetScope().primitiveValue(), cm.getTargetScope(), p, cm);
-    else 
-      p.tx(context.formatPhrase(RenderingContext.CONC_MAP_NOT_SPEC));
+    if (cm.hasSourceScope() || cm.hasTargetScope()) {
+      p.tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_FROM) + " ");
+      if (cm.hasSourceScope())
+        AddVsRef(cm.getSourceScope().primitiveValue(), cm.getSourceScope(), p, cm);
+      else
+        p.tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_NOT_SPEC));
+      p.tx(" " + (context.formatPhrase(RenderingI18nContext.CONC_MAP_TO) + " "));
+      if (cm.hasTargetScope())
+        AddVsRef(cm.getTargetScope().primitiveValue(), cm.getTargetScope(), p, cm);
+      else
+        p.tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_NOT_SPEC));
+    } else {
+      p.tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_NO_SPEC));
+    }
 
     x.br();
     int gc = 0;
 
-    CodeSystem cs = getContext().getWorker().fetchCodeSystem("http://hl7.org/fhir/concept-map-relationship", IWorkerContext.VersionResolutionRules.defaultRule());
-    if (cs == null)
-      cs = getContext().getWorker().fetchCodeSystem("http://hl7.org/fhir/concept-map-equivalence", IWorkerContext.VersionResolutionRules.defaultRule());
+    CodeSystem cs = VersionUtilities.isR5Plus(context.getContext().getVersion()) ?
+      getContext().getWorker().fetchCodeSystem("http://hl7.org/fhir/concept-map-relationship", IWorkerContext.VersionResolutionRules.defaultRule()) :
+      getContext().getWorker().fetchCodeSystem("http://hl7.org/fhir/concept-map-equivalence", IWorkerContext.VersionResolutionRules.defaultRule());
     String eqpath = cs == null ? null : cs.getWebPath();
 
     for (ConceptMapGroupComponent grp : cm.getGroup()) {
@@ -391,9 +397,9 @@ public class ConceptMapRenderer extends TerminologyRenderer {
       StructureDefinition sdSrc = findSourceStructure(grp.getSource(), grp.getSourceElement());
       StructureDefinition sdTgt = findSourceStructure(grp.getTarget(), grp.getTargetElement());
       if (sdSrc != null && sdTgt != null) {
-        renderModelMap(sdSrc, sdTgt, status, res, x, gc, eqpath, grp, hasComment, isSimple, props, sources, targets);
+        renderModelMap(sdSrc, sdTgt, status, res, x, gc, eqpath, grp, hasComment, isSimple, props, sources, targets, cm.getGroup().size() > 1);
       } else {
-        renderCodeSystemMap(status, res, x, gc, eqpath, grp, hasComment, isSimple, props, sources, targets);
+        renderCodeSystemMap(status, res, x, gc, eqpath, grp, hasComment, isSimple, props, sources, targets, cm.getGroup().size() > 1);
       }
     }
   }
@@ -408,33 +414,35 @@ public class ConceptMapRenderer extends TerminologyRenderer {
 
   private void renderModelMap(StructureDefinition sdSrc, StructureDefinition sdTgt, RenderingStatus status, ResourceWrapper res, XhtmlNode x, int gc, String eqpath,
       ConceptMapGroupComponent grp, boolean hasComment, boolean ok,
-      Map<String, HashSet<String>> props, Map<String, HashSet<String>> sources, Map<String, HashSet<String>> targets)
+      Map<String, HashSet<String>> props, Map<String, HashSet<String>> sources, Map<String, HashSet<String>> targets, boolean hasMultipleGroups)
       throws UnsupportedEncodingException, IOException {
     XhtmlNode pp = x.para();
-    pp.b().tx(context.formatPhrase(RenderingContext.CONC_MAP_GRP, gc) + " ");
-    pp.tx(context.formatPhrase(RenderingContext.CONC_MAP_FROM) + " ");
+    if (hasMultipleGroups) {
+      pp.b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_GRP, gc) + " ");
+    }
+    pp.tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_FROM) + " ");
     pp.ah(sdSrc.getWebPath()).tx(sdSrc.present(context.getLocale().toLanguageTag()));
     pp.tx(" to ");
     pp.ah(sdTgt.getWebPath()).tx(sdTgt.present(context.getLocale().toLanguageTag()));
     
     XhtmlNode tbl = x.table( "grid", false);
     XhtmlNode tr = tbl.tr();
-    tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_SOURCE));
-    tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_SOURCE_CARD));
-    tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_SOURCE_TYPE));
-    tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_REL));
-    tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_TRGT));
-    tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_TRGT_CARD));
-    tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_TRGT_TYPE));
+    tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_SOURCE));
+    tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_SOURCE_CARD));
+    tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_SOURCE_TYPE));
+    tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_REL));
+    tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_TRGT));
+    tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_TRGT_CARD));
+    tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_TRGT_TYPE));
     if (hasComment)
-      tr.td().b().tx(context.formatPhrase(RenderingContext.GENERAL_COMMENT));
+      tr.td().b().tx(context.formatPhrase(RenderingI18nContext.GENERAL_COMMENT));
     for (SourceElementComponent ccl : grp.getElement()) {
         tr = tbl.tr();
         ElementDefinition edSrc = sdSrc.getSnapshot().getElementById(ccl.getCode());
         if (edSrc == null) {        
           tr.td().colspan(3).addText(ccl.getCode());
         } else {
-          tr.td().ah(sdSrc.getWebPath()+"#"+ccl.getCode()).tx(ccl.getCode());
+          tr.td().ah(sdSrc.getWebPath()+"#s-"+ccl.getCode()).tx(ccl.getCode());
           tr.td().tx(""+edSrc.getMin()+".."+edSrc.getMax());
           tr.td().tx("todo");
         }
@@ -471,7 +479,7 @@ public class ConceptMapRenderer extends TerminologyRenderer {
           if (edTgt == null) {        
             tr.td().colspan(3).addText(ccm.getCode());
           } else {
-            tr.td().ah(sdTgt.getWebPath()+"#"+ccm.getCode()).tx(ccm.getCode());
+            tr.td().ah(sdTgt.getWebPath()+"#s-"+ccm.getCode()).tx(ccm.getCode());
             tr.td().tx(""+edTgt.getMin()+".."+edTgt.getMax());
             tr.td().tx("todo");
           }
@@ -485,22 +493,24 @@ public class ConceptMapRenderer extends TerminologyRenderer {
   
   private void renderCodeSystemMap(RenderingStatus status, ResourceWrapper res, XhtmlNode x, int gc, String eqpath,
       ConceptMapGroupComponent grp, boolean hasComment, boolean isSimple,
-      Map<String, HashSet<String>> props, Map<String, HashSet<String>> sources, Map<String, HashSet<String>> targets)
+      Map<String, HashSet<String>> props, Map<String, HashSet<String>> sources, Map<String, HashSet<String>> targets, boolean hasMultipleGroups)
       throws UnsupportedEncodingException, IOException {
 
     XhtmlNode pp = x.para();
-    pp.b().tx(context.formatPhrase(RenderingContext.CONC_MAP_GRP, gc) + " ");
-    pp.tx(context.formatPhrase(RenderingContext.CONC_MAP_FROM) + " ");
+    if (hasMultipleGroups) {
+      pp.b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_GRP, gc) + " ");
+    }
+    pp.tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_FROM) + " ");
     if (grp.hasSource()) {
       renderCanonical(status, res, pp, CodeSystem.class, grp.getSourceElement());
     } else {
-      pp.code(context.formatPhrase(RenderingContext.CONC_MAP_CODE_SYS_UNSPEC));
+      pp.code(context.formatPhrase(RenderingI18nContext.CONC_MAP_CODE_SYS_UNSPEC));
     }
     pp.tx(" to ");
     if (grp.hasTarget()) {
       renderCanonical(status, res, pp, CodeSystem.class, grp.getTargetElement());
     } else {
-      pp.code(context.formatPhrase(RenderingContext.CONC_MAP_CODE_SYS_UNSPEC));
+      pp.code(context.formatPhrase(RenderingI18nContext.CONC_MAP_CODE_SYS_UNSPEC));
     }
 
     String display;
@@ -508,11 +518,11 @@ public class ConceptMapRenderer extends TerminologyRenderer {
       // simple
       XhtmlNode tbl = x.table( "grid", false);
       XhtmlNode tr = tbl.tr();
-      tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_SOURCE));
-      tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_REL));
-      tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_TRGT));
+      tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_SOURCE));
+      tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_REL));
+      tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_TRGT));
       if (hasComment)
-        tr.td().b().tx(context.formatPhrase(RenderingContext.GENERAL_COMMENT));
+        tr.td().b().tx(context.formatPhrase(RenderingI18nContext.GENERAL_COMMENT));
       renderPropHeaders(props, tr);
       for (SourceElementComponent ccl : grp.getElement()) {
         tr = tbl.tr();
@@ -544,9 +554,9 @@ public class ConceptMapRenderer extends TerminologyRenderer {
             else {
               if (ccm.hasExtension(ExtensionDefinitions.EXT_OLD_CONCEPTMAP_EQUIVALENCE)) {
                 String code = ExtensionUtilities.readStringExtension(ccm, ExtensionDefinitions.EXT_OLD_CONCEPTMAP_EQUIVALENCE);
-                tr.td().ah(context.prefixLocalHref(eqpath+"#"+code), code).tx(presentEquivalenceCode(code));                
+                tr.td().ah(context.prefixLocalHref(eqpath+"#concept-map-equivalence-"+code), code).tx(presentEquivalenceCode(code));
               } else {
-                tr.td().ah(context.prefixLocalHref(eqpath+"#"+ccm.getRelationship().toCode()), ccm.getRelationship().toCode()).tx(presentRelationshipCode(ccm.getRelationship().toCode()));
+                tr.td().ah(context.prefixLocalHref(eqpath+"#concept-map-relationship-"+ccm.getRelationship().toCode()), ccm.getRelationship().toCode()).tx(presentRelationshipCode(ccm.getRelationship().toCode()));
               }
             }
             td = tr.td();
@@ -576,23 +586,23 @@ public class ConceptMapRenderer extends TerminologyRenderer {
       XhtmlNode tbl = x.table("grid", false);
       XhtmlNode tr = tbl.tr();
       XhtmlNode td;
-      tr.td().colspan(Integer.toString(1+sources.size())).b().tx(context.formatPhrase(RenderingContext.CONC_MAP_SRC_DET));
+      tr.td().colspan(Integer.toString(1+sources.size())).b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_SRC_DET));
       if (hasRelationships) {
-        tr.td().b().tx(context.formatPhrase(RenderingContext.CONC_MAP_REL));
+        tr.td().b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_REL));
       }
-      tr.td().colspan(Integer.toString(1+targets.size())).b().tx(context.formatPhrase(RenderingContext.CONC_MAP_TRGT_DET));
+      tr.td().colspan(Integer.toString(1+targets.size())).b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_TRGT_DET));
       if (hasComment) {
-        tr.td().b().tx(context.formatPhrase(RenderingContext.GENERAL_COMMENT));
+        tr.td().b().tx(context.formatPhrase(RenderingI18nContext.GENERAL_COMMENT));
       }
       if (!props.isEmpty()) {
-        tr.td().colspan(Integer.toString(1+targets.size())).b().tx(context.formatPhrase(RenderingContext.GENERAL_PROPS));
+        tr.td().colspan(Integer.toString(1+targets.size())).b().tx(context.formatPhrase(RenderingI18nContext.GENERAL_PROPS));
       }
       tr = tbl.tr();
       if (sources.get("code").size() == 1) {
         String url = sources.get("code").iterator().next();
         renderCSDetailsLink(tr, url, true);           
       } else
-        tr.td().b().tx(context.formatPhrase(RenderingContext.GENERAL_CODE));
+        tr.td().b().tx(context.formatPhrase(RenderingI18nContext.GENERAL_CODE));
       for (String s : sources.keySet()) {
         if (s != null && !s.equals("code")) {
           if (sources.get(s).size() == 1) {
@@ -609,7 +619,7 @@ public class ConceptMapRenderer extends TerminologyRenderer {
         String url = targets.get("code").iterator().next();
         renderCSDetailsLink(tr, url, true);           
       } else
-        tr.td().b().tx(context.formatPhrase(RenderingContext.GENERAL_CODE));
+        tr.td().b().tx(context.formatPhrase(RenderingI18nContext.GENERAL_CODE));
       for (String s : targets.keySet()) {
         if (s != null && !s.equals("code")) {
           if (targets.get(s).size() == 1) {
@@ -818,8 +828,8 @@ public class ConceptMapRenderer extends TerminologyRenderer {
     if (span2) {
       td.colspan("2");
     }
-    td.b().tx(context.formatPhrase(RenderingContext.CONC_MAP_CODES));
-    td.tx(" " + (context.formatPhrase(RenderingContext.CONC_MAP_FRM) + " "));
+    td.b().tx(context.formatPhrase(RenderingI18nContext.CONC_MAP_CODES));
+    td.tx(" " + (context.formatPhrase(RenderingI18nContext.CONC_MAP_FRM) + " "));
     if (cs == null)
       td.tx(url);
     else
@@ -1124,7 +1134,10 @@ public class ConceptMapRenderer extends TerminologyRenderer {
   private static MultipleMappingRow findExistingRowByTarget(List<MultipleMappingRow> rows, String system, String code, int i) {
     for (MultipleMappingRow row : rows) {
       for (MultipleMappingRowItem cells : row.rowSets) {
-        if (cells.cells.size() > i + 1 && cells.cells.get(i+1).matches(system, code)) {
+        @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+        //False positive: not using String.matches
+        boolean cellMatches = cells.cells.size() > i + 1 && cells.cells.get(i+1).matches(system, code);
+        if (cellMatches) {
           return row;
         }
       }
@@ -1135,7 +1148,10 @@ public class ConceptMapRenderer extends TerminologyRenderer {
   private static MultipleMappingRow findExistingRowBySource(List<MultipleMappingRow> rows, String system, String code, int i) {
     for (MultipleMappingRow row : rows) {
       for (MultipleMappingRowItem cells : row.rowSets) {
-        if (cells.cells.size() > i && cells.cells.get(i).matches(system, code)) {
+        @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+        //False positive: not using String.matches
+        boolean cellMatchesSource = cells.cells.size() > i && cells.cells.get(i).matches(system, code);
+        if (cellMatchesSource) {
           return row;
         }
       }

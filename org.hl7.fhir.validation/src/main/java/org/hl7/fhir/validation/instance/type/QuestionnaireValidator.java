@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import org.fhir.ucum.Decimal;
 import org.fhir.ucum.Pair;
 import org.fhir.ucum.UcumException;
 import org.fhir.ucum.UcumService;
 import org.hl7.fhir.exceptions.FHIRException;
-import org.hl7.fhir.r5.context.IWorkerContext;
 import org.hl7.fhir.r5.elementmodel.Element;
 import org.hl7.fhir.r5.elementmodel.ObjectConverter;
 import org.hl7.fhir.r5.extensions.ExtensionDefinitions;
@@ -38,7 +38,7 @@ import org.hl7.fhir.r5.model.TimeType;
 import org.hl7.fhir.r5.model.ValueSet;
 import org.hl7.fhir.r5.terminologies.utilities.TerminologyServiceErrorClass;
 import org.hl7.fhir.r5.terminologies.utilities.ValidationResult;
-import org.hl7.fhir.r5.utils.UserDataNames;
+import org.hl7.fhir.utilities.UserDataNames;
 import org.hl7.fhir.r5.utils.validation.ValidationContextCarrier;
 import org.hl7.fhir.r5.utils.validation.ValidationContextCarrier.ValidationContextResourceProxy;
 import org.hl7.fhir.utilities.CommaSeparatedStringBuilder;
@@ -46,6 +46,7 @@ import org.hl7.fhir.utilities.FhirPublication;
 import org.hl7.fhir.utilities.Utilities;
 import org.hl7.fhir.utilities.VersionUtilities;
 import org.hl7.fhir.utilities.i18n.I18nConstants;
+import org.hl7.fhir.utilities.regex.RegexTimeout;
 import org.hl7.fhir.utilities.validation.ValidationMessage;
 import org.hl7.fhir.utilities.validation.ValidationMessage.IssueSeverity;
 import org.hl7.fhir.utilities.validation.ValidationMessage.IssueType;
@@ -408,7 +409,10 @@ public class QuestionnaireValidator extends BaseValidator {
     for (QuestionnaireItemAnswerOptionComponent ao : answerOptions) {
       if (ao.hasValue() && ao.getValue() instanceof Reference) {
         Reference r = ao.getValueReference();
-        if (r.matches(value)) {
+        @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+        //False positive: not using String.matches
+        boolean refMatches = r.matches(value);
+        if (refMatches) {
           return true;
         }
       }
@@ -420,7 +424,10 @@ public class QuestionnaireValidator extends BaseValidator {
     for (QuestionnaireItemAnswerOptionComponent ao : answerOptions) {
       if (ao.hasValue() && ao.getValue() instanceof Coding) {
         Coding c = ao.getValueCoding();
-        if (c.matches(value)) {
+        @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+        //False positive: not using String.matches
+        boolean codingMatches = c.matches(value);
+        if (codingMatches) {
           return true;
         }
       }
@@ -1011,10 +1018,18 @@ public class QuestionnaireValidator extends BaseValidator {
         if (qItem.hasExtension(ExtensionDefinitions.EXT_REGEX) ) {
           String regex = ExtensionUtilities.readStringExtension(qItem, ExtensionDefinitions.EXT_REGEX);
           String ef = ExtensionUtilities.readStringExtension(qItem, ExtensionDefinitions.EXT_ENTRY_FORMAT);
-          if (ef == null) {
-            ok = rule(errors, "2024-05-07", IssueType.INVARIANT, vns, v.primitiveValue().matches(regex), I18nConstants.QUESTIONNAIRE_QR_ITEM_STRING_REGEX, v.primitiveValue(), regex) && ok;
-          } else {
-            ok = rule(errors, "2024-05-07", IssueType.INVARIANT, vns, v.primitiveValue().matches(regex), I18nConstants.QUESTIONNAIRE_QR_ITEM_STRING_REGEX_EF, v.primitiveValue(), regex, ef) && ok;                   
+
+          try {
+            @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+            //False positive: RegexTimeout.matches is the approved timeout wrapper
+            boolean vMatchesRegex = RegexTimeout.matches(v.primitiveValue(), regex);
+            if (ef == null) {
+              ok = rule(errors, "2024-05-07", IssueType.INVARIANT, vns, vMatchesRegex, I18nConstants.QUESTIONNAIRE_QR_ITEM_STRING_REGEX, v.primitiveValue(), regex) && ok;
+            } else {
+              ok = rule(errors, "2024-05-07", IssueType.INVARIANT, vns, vMatchesRegex, I18nConstants.QUESTIONNAIRE_QR_ITEM_STRING_REGEX_EF, v.primitiveValue(), regex, ef) && ok;
+            }
+          } catch (TimeoutException e) {
+            ok = rule(errors, "2026-04-30", IssueType.EXCEPTION, vns, false, I18nConstants.REGEX_MATCH_TIMED_OUT, regex) && ok;
           }
         }
         warning(errors, "2024-05-07", IssueType.INVARIANT, vns, !(v.primitiveValue().contains("\r") || v.primitiveValue().contains("\n")), I18nConstants.QUESTIONNAIRE_QR_ITEM_STRING_ILLEGAL_CHARS, v.primitiveValue());
@@ -1511,7 +1526,7 @@ public class QuestionnaireValidator extends BaseValidator {
       } else {
         boolean found = false;
         for (DateType item : list) {
-          if (item.getValue().equals(v.primitiveValue())) {
+          if (item.getValueAsString().equals(v.primitiveValue())) {
             found = true;
             break;
           }

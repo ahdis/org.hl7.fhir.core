@@ -35,12 +35,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -67,17 +65,15 @@ import org.hl7.fhir.r5.model.Questionnaire;
 import org.hl7.fhir.r5.model.Resource;
 import org.hl7.fhir.r5.model.ResourceType;
 import org.hl7.fhir.r5.model.StructureDefinition;
-import org.hl7.fhir.r5.model.StructureDefinition.StructureDefinitionKind;
-import org.hl7.fhir.r5.model.StructureDefinition.TypeDerivationRule;
 import org.hl7.fhir.r5.model.StructureMap;
 import org.hl7.fhir.r5.model.StructureMap.StructureMapModelMode;
 import org.hl7.fhir.r5.model.StructureMap.StructureMapStructureComponent;
 import org.hl7.fhir.r5.terminologies.JurisdictionUtilities;
 import org.hl7.fhir.r5.terminologies.client.ITerminologyClient;
-import org.hl7.fhir.r5.terminologies.client.TerminologyClientManager.ITerminologyClientFactory;
+import org.hl7.fhir.r5.terminologies.client.ITerminologyClientFactory;
 import org.hl7.fhir.r5.terminologies.client.TerminologyClientR5;
 import org.hl7.fhir.r5.utils.R5Hacker;
-import org.hl7.fhir.r5.utils.UserDataNames;
+import org.hl7.fhir.utilities.UserDataNames;
 import org.hl7.fhir.r5.utils.xver.XVerExtensionManager;
 import org.hl7.fhir.r5.utils.validation.IResourceValidator;
 import org.hl7.fhir.r5.utils.validation.ValidatorSession;
@@ -313,9 +309,12 @@ public class SimpleWorkerContext extends BaseWorkerContext implements IWorkerCon
     }
     
     private Parameters makeExpProfile() {
-      Parameters ep = new Parameters();
-      ep.addParameter("cache-id", UUID.randomUUID().toString().toLowerCase());
-      return ep;
+      // The cache-id is no longer sent as an expansion parameter; it travels as the
+      // X-Cache-Id HTTP header, set only when a server-side cache has actually been
+      // started via $cache-control?mode=start (see TerminologyClientContext, gated by
+      // canUseCacheId). Injecting a random cache-id parameter here made upgraded tx
+      // servers reject the request with "the cache '<id>' is not known to this server".
+      return new Parameters();
     }
 
     public SimpleWorkerContext fromPackage(NpmPackage pi, IContextResourceLoader loader, boolean genSnapshots) throws IOException, FHIRException {
@@ -723,6 +722,8 @@ public class SimpleWorkerContext extends BaseWorkerContext implements IWorkerCon
     byte[] bytes = IOUtils.toByteArray(stream);
     binaries.put("version.info", new BytesProvider(bytes));
 
+    @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+    //simple character class split; safe
     String[] vi = new String(bytes).split("\\r?\\n");
     for (String s : vi) {
       if (s.startsWith("version=")) {

@@ -31,7 +31,7 @@ import org.hl7.fhir.r5.model.Property;
 import org.hl7.fhir.r5.model.StructureDefinition.StructureDefinitionMappingComponent;
 import org.hl7.fhir.r5.renderers.utils.RenderingContext;
 import org.hl7.fhir.r5.terminologies.CodeSystemUtilities;
-import org.hl7.fhir.r5.utils.UserDataNames;
+import org.hl7.fhir.utilities.UserDataNames;
 import org.hl7.fhir.utilities.MarkedToMoveToAdjunctPackage;
 import org.hl7.fhir.utilities.Utilities;
 import org.hl7.fhir.utilities.i18n.AcceptLanguageHeader;
@@ -698,8 +698,13 @@ public class LanguageUtils {
     String elementPath = e.getProperty().getDefinition().getBase().getPath();
     if (e.getName().equals("extension")) {
       String url = e.getChildValue("url");
+      @SuppressWarnings("checkstyle:patternUsage")
+      //anchored segments, safe
       Matcher m = Pattern.compile(INTERVERSION_PATTERN).matcher(url);
-      if (m.matches()) {
+      @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+      //False positive: Matcher.matches() on m which has been independently reviewed
+      boolean matched = m.matches();
+      if (matched) {
         elementPath = m.group(1);
       }
     }

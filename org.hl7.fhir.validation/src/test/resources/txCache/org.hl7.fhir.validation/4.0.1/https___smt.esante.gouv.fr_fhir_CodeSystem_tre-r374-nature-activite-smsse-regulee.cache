@@ -19,7 +19,6 @@ v: {
   "system" : "https://smt.esante.gouv.fr/fhir/CodeSystem/tre-r374-nature-activite-smsse-regulee",
   "version" : "20260505120000",
   "server" : "https://smt.esante.gouv.fr/fhir",
-  "unknown-systems" : "",
   "issues" : {
   "resourceType" : "OperationOutcome"
 }

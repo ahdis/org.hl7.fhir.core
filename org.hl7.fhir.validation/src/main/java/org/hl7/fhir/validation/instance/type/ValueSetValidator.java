@@ -23,7 +23,7 @@ import org.hl7.fhir.r5.terminologies.expansion.ValueSetExpansionOutcome;
 import org.hl7.fhir.r5.terminologies.utilities.CodingValidationRequest;
 import org.hl7.fhir.r5.terminologies.utilities.TerminologyServiceErrorClass;
 import org.hl7.fhir.r5.terminologies.utilities.ValidationResult;
-import org.hl7.fhir.r5.utils.UserDataNames;
+import org.hl7.fhir.utilities.UserDataNames;
 import org.hl7.fhir.r5.utils.validation.IResourceValidator;
 import org.hl7.fhir.r5.utils.validation.IValidationPolicyAdvisor.SpecialValidationAction;
 import org.hl7.fhir.r5.utils.validation.IValidationPolicyAdvisor.SpecialValidationRule;
@@ -49,7 +49,6 @@ import org.hl7.fhir.validation.codesystem.UcumChecker;
 import org.hl7.fhir.validation.instance.InstanceValidator;
 import org.hl7.fhir.validation.instance.utils.NodeStack;
 import org.hl7.fhir.validation.instance.utils.ValidationContext;
-import org.hl7.fhir.validation.special.TxTester;
 
 @Slf4j
 public class ValueSetValidator extends BaseValidator {
@@ -168,7 +167,6 @@ public class ValueSetValidator extends BaseValidator {
     Boolean, Integer, Decimal, Code, DateTime, Coding, CodeList, String
   }
 
-  private static final int TOO_MANY_CODES_TO_VALIDATE = 1000;
   private static final int VALIDATION_BATCH_SIZE = 300;
 
 
@@ -460,10 +458,9 @@ public class ValueSetValidator extends BaseValidator {
           int cc = 0;
           List<VSCodingValidationRequest> batch = new ArrayList<>();
           boolean first = true;
-          if (concepts.size() > TOO_MANY_CODES_TO_VALIDATE) {
-            hint(errors, "2023-09-06", IssueType.BUSINESSRULE, stack, false, I18nConstants.VALUESET_INC_TOO_MANY_CODES, concepts.size());
-          } else if (!((InstanceValidator) parent).isValidateValueSetCodesOnTxServer()) {
-            hint(errors, "2023-09-06", IssueType.BUSINESSRULE, stack, false, I18nConstants.VALUESET_INC_NOT_VALIDATING, concepts.size());
+          int codeLimit = settings.getCodeSystemValidationSizeLimit();
+          if (codeLimit > 0 && concepts.size() > codeLimit) {
+            hint(errors, "2023-09-06", IssueType.BUSINESSRULE, stack, false, I18nConstants.VALUESET_INC_TOO_MANY_CODES, concepts.size(), codeLimit);
           } else if (context.isNoTerminologyServer()) {
             hint(errors, "2023-09-06", IssueType.BUSINESSRULE, stack, false, I18nConstants.VALUESET_INC_NO_SERVER, concepts.size());
           } else {
@@ -510,6 +507,24 @@ public class ValueSetValidator extends BaseValidator {
     return ok;
   }
 
+  /**
+   * The options for checking a code in this value set against the terminology server.
+   * <p>
+   * Derived from the validator settings rather than ValidationOptions.defaults(), so that the validation
+   * language comes along. Without it the request would still carry a displayLanguage merged in from the
+   * expansion parameters, but findValidationLanguage() would see no language on the options and route the
+   * request as though it had none - which sends a Czech display check to the default server rather than to
+   * the one that is authoritative for Czech.
+   * <p>
+   * withLanguage() copies (getValidationOptionsLanguage never returns null), which matters because the
+   * withExampleOK/setDisplayWarningMode/withExternalSource that follow all mutate in place - and settings
+   * is shared with every other validator in the run.
+   */
+  private ValidationOptions txOptions(NodeStack stack, ValueSet externalSource) {
+    String lang = ((InstanceValidator) parent).getValidationOptionsLanguage(stack);
+    return settings.withLanguage(lang).withExampleOK().setDisplayWarningMode(true).withExternalSource(externalSource);
+  }
+
   private void executeValidationBatch(List<ValidationMessage> errors, String vsid, boolean retired, String system,
       String version, List<VSCodingValidationRequest> batch, NodeStack baseStack, ValueSet vss) {
     if (batch.size() > 0) {
@@ -517,7 +532,7 @@ public class ValueSetValidator extends BaseValidator {
       if (warning(errors, "2025-07-07", IssueType.NOTSUPPORTED, baseStack,  txInfo.getTestVersion() != null && VersionUtilities.isThisOrLater(TerminologyClientContext.TX_BATCH_VERSION, txInfo.getTestVersion(), VersionUtilities.VersionPrecision.MINOR), I18nConstants.VALUESET_TXVER_BATCH_NOT_SUPPORTED, (txInfo.getTestVersion() == null ? "Not Known" : txInfo.getTestVersion()), system+(version == null ? "" : "|"+version), txInfo.getServer())) {
         long t = System.currentTimeMillis();
         log.debug("  : Validate "+batch.size()+" codes from "+system+" for "+vsid);
-        context.validateCodeBatch(ValidationOptions.defaults().withExampleOK().setDisplayWarningMode(true).withExternalSource(vss), batch, null, false);
+        context.validateCodeBatch(txOptions(baseStack, vss), batch, null);
         log.debug("  :   .. "+(System.currentTimeMillis()-t)+"ms");
         for (VSCodingValidationRequest cv : batch) {
           if (version == null) {
@@ -538,7 +553,7 @@ public class ValueSetValidator extends BaseValidator {
 
     if (!noTerminologyChecks) {
       if (version == null) {
-        ValidationResult vv = context.validateCode(ValidationOptions.defaults().withExampleOK().withExternalSource(vs).setDisplayWarningMode(true), new Coding(system, code, display), null);
+        ValidationResult vv = context.validateCode(txOptions(stack, vs), new Coding(system, code, display), null);
         if (vv.getErrorClass() == TerminologyServiceErrorClass.CODESYSTEM_UNSUPPORTED) {
           if (isExampleUrl(system)) {
             if (settings.isAllowExamples()) {
@@ -560,7 +575,7 @@ public class ValueSetValidator extends BaseValidator {
           }
         }
       } else {
-        ValidationResult vv = context.validateCode(ValidationOptions.defaults().withExampleOK().setDisplayWarningMode(true), new Coding(system, code, display).setVersion(version), null);
+        ValidationResult vv = context.validateCode(txOptions(stack, null), new Coding(system, code, display).setVersion(version), null);
         if (vv.getErrorClass() == TerminologyServiceErrorClass.CODESYSTEM_UNSUPPORTED) {
           warning(errors, NO_RULE_DATE, IssueType.BUSINESSRULE, stackInc.getLiteralPath(), false, I18nConstants.VALUESET_UNC_SYSTEM_WARNING_VER, system+"#"+version, vv.getMessage());            
           return false;        
@@ -687,14 +702,19 @@ public class ValueSetValidator extends BaseValidator {
             } else if ("regex".equals(op)) {
               String err = null;
               try {
-                Pattern.compile(value);
+                @SuppressWarnings("checkstyle:patternUsage")
+                //Regex sourced from FHIR ValueSet filter value; compiled to validate syntax only, not used in matching
+                Pattern compiled = Pattern.compile(value);
               } catch (PatternSyntaxException e) {
                 err = e.getMessage();
               }            
               ok = rule(errors, "2024-03-09", IssueType.INVALID, stack, err == null, I18nConstants.VALUESET_BAD_FILTER_VALUE_VALID_REGEX, property, value, err) && ok;
               ok = rule(errors, "2024-03-09", IssueType.INVALID, stack, !"concept".equals(property), I18nConstants.VALUESET_BAD_PROPERTY_NO_REGEX, property) && ok;
             } else if (Utilities.existsInList(op, "in", "not-in")) {
-              for (String v : value.split("\\,")) {
+              @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+              //single literal character split
+              String[] filterValues = value.split("\\,");
+              for (String v : filterValues) {
                 ok = checkFilterValue(errors, stack, system, version, ok, property, op, v, rules) && ok;
               }
             } else {
@@ -781,8 +801,11 @@ public class ValueSetValidator extends BaseValidator {
         if (value != null && Utilities.startsWithInList(value, "eq", "ne", "gt", "lt", "ge", "le", "sa", "eb", "ap")) {
           value = value.substring(2);
         }  
+        @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+        //anchored, bounded date/time segments, safe
+        boolean validDateTime = value.matches("([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?)?)?)?");
         ok = rule(errors, "2024-03-09", IssueType.INVALID, stack.getLiteralPath(),
-            value.matches("([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?)?)?)?"), 
+            validDateTime,
             I18nConstants.VALUESET_BAD_FILTER_VALUE_DATETIME, property, value) && ok;
         break;
       case Decimal:
@@ -803,7 +826,10 @@ public class ValueSetValidator extends BaseValidator {
         break;
       case Coding :
         Coding code;
-        if (value.matches("[a-zA-Z][a-zA-Z0-9+.-]*:[^\\s|]+\\|\\S+")) {
+        @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+        //anchored, non-overlapping segments, safe
+        boolean isCodingLegacyFormat = value.matches("[a-zA-Z][a-zA-Z0-9+.-]*:[^\\s|]+\\|\\S+");
+        if (isCodingLegacyFormat) {
           warning(errors, "2025-07-10", IssueType.INVALID, stack, false, I18nConstants.VALUESET_BAD_FILTER_VALUE_CODED_LEGACY, property, value);
           code = new Coding().setSystem(value.substring(0, value.lastIndexOf("|"))).setCode(value.substring(value.lastIndexOf("|") + 1));
         } else {
@@ -879,6 +905,7 @@ public class ValueSetValidator extends BaseValidator {
     // if we can produce a valid value set from the compose, we expand it, and compare the members
     if (vs != null) {
       // safe to hack it here, because we're otherwise finished with it
+      // and making sure this is not cached
       vs.setUrl("urn:uuid:"+UUID.randomUUID().toString().toLowerCase());
       vs.setVersion(null);
       vs.setExpansion(null);

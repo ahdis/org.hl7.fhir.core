@@ -280,6 +280,9 @@ public class HTTPClientCommand implements Callable<Integer> {
     if (instanceValidatorOptions.validationTimeout != null && instanceValidatorOptions.validationTimeout > 0) {
       uriBuilder.addParameter(ParamNames.VALIDATION_TIMEOUT, String.valueOf(instanceValidatorOptions.validationTimeout));
     }
+    if (instanceValidatorOptions.codeSystemValidationSizeLimit != null) {
+      uriBuilder.addParameter(ParamNames.CODESYSTEM_VALIDATION_SIZE_LIMIT, String.valueOf(instanceValidatorOptions.codeSystemValidationSizeLimit));
+    }
 
     // extensions - list, values may be URIs; addParameter handles percent-encoding
     if (instanceValidatorOptions.extensions != null) {
@@ -298,7 +301,10 @@ public class HTTPClientCommand implements Callable<Integer> {
     // compactProfiles - each entry is a comma-delimited list of profiles
     if (instanceValidatorOptions.compactProfiles != null) {
       for (String compactProfile : instanceValidatorOptions.compactProfiles) {
-        for (String profile : compactProfile.split(",")) {
+        @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
+        //single literal character split
+        String[] profileParts = compactProfile.split(",");
+        for (String profile : profileParts) {
           String trimmed = profile.trim();
           if (!trimmed.isEmpty()) {
             uriBuilder.addParameter(ParamNames.PROFILE, trimmed);
