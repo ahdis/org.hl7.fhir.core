@@ -11,12 +11,13 @@ import org.hl7.fhir.convertors.factory.VersionConvertorFactory_40_50;
 import org.hl7.fhir.exceptions.DefinitionException;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.exceptions.FHIRFormatError;
-import org.hl7.fhir.r5.formats.JsonParser;
-import org.hl7.fhir.r5.formats.XmlParser;
-import org.hl7.fhir.r5.model.Constants;
-import org.hl7.fhir.r5.model.OperationOutcome;
-import org.hl7.fhir.r5.model.Resource;
-import org.hl7.fhir.r5.utils.OperationOutcomeUtilities;
+import org.hl7.fhir.model.IModelContext;
+import org.hl7.fhir.model.core.ImplementationGuide;
+import org.hl7.fhir.model.core.Resource;
+import org.hl7.fhir.model.core.OperationOutcome;
+import org.hl7.fhir.model.core.formats.JsonParser;
+import org.hl7.fhir.model.core.formats.XmlParser;
+import org.hl7.fhir.model.utilities.OperationOutcomeUtilities;
 import org.hl7.fhir.utilities.json.JsonException;
 import org.hl7.fhir.utilities.json.model.JsonObject;
 import org.hl7.fhir.validation.special.TxTestData;
@@ -35,6 +36,16 @@ import java.util.TreeSet;
  * Handler for validating resources
  */
 class TxTestHTTPHandler extends BaseHTTPHandler implements HttpHandler {
+
+  private IModelContext context;
+  private final FhirValidatorHttpService fhirValidatorHttpService;
+
+  public TxTestHTTPHandler(IModelContext context, FhirValidatorHttpService fhirValidatorHttpService) {
+    super(context);
+    this.context = context;
+    this.fhirValidatorHttpService = fhirValidatorHttpService;
+  }
+
 
   public class ServerTxTesterLoader implements TxTester.ITxTesterLoader {
     private TxTestData txtests;
@@ -81,9 +92,9 @@ class TxTestHTTPHandler extends BaseHTTPHandler implements HttpHandler {
       // always load as R5
       try (InputStream inputStream = IOUtils.toInputStream(contents, Charsets.UTF_8)) {
         if (filename.contains(".json")) {
-          return new JsonParser().parse(inputStream);
+          return new JsonParser(context).parse(inputStream);
         } else {
-          return new XmlParser().parse(inputStream);
+          return new XmlParser(context).parse(inputStream);
         }
       }
     }
@@ -116,12 +127,6 @@ class TxTestHTTPHandler extends BaseHTTPHandler implements HttpHandler {
       }
       throw new Exception("Test Suite "+testName+" not found in suite "+suite.asString("name"));
     }
-  }
-
-  private final FhirValidatorHttpService fhirValidatorHttpService;
-
-  public TxTestHTTPHandler(FhirValidatorHttpService fhirValidatorHttpService) {
-    this.fhirValidatorHttpService = fhirValidatorHttpService;
   }
 
   @Override
@@ -162,6 +167,7 @@ class TxTestHTTPHandler extends BaseHTTPHandler implements HttpHandler {
         modes.add("snomed");
         modes.add("mimetypes");
         modes.add("icd-11");
+        modes.add("closure");
       }
 
       if (suiteName == null) {
@@ -201,6 +207,7 @@ class TxTestHTTPHandler extends BaseHTTPHandler implements HttpHandler {
         org.hl7.fhir.utilities.json.model.JsonObject testCases = org.hl7.fhir.utilities.json.parser.JsonParser.parseObject(txtests.load("test-cases.json"));
         org.hl7.fhir.utilities.json.model.JsonObject externals = org.hl7.fhir.utilities.json.parser.JsonParser.parseObject(txtests.load(externalFile));
         tester = new ServerTxTester(new ServerTxTesterLoader(txtests, version), server, true, testCases, externals);
+        tester.setExternalsName(externalFile);
         fhirValidatorHttpService.getTxTesters().put(server, tester);
       }
 
@@ -218,6 +225,11 @@ class TxTestHTTPHandler extends BaseHTTPHandler implements HttpHandler {
         String err = tester.executeTest(tester.loader, suite, test, modes, label);
         if (err == null) {
           outcome = OperationOutcomeUtilities.createSuccess("Test passed");
+        } else if (TxTester.NOT_RUN_FEATURES.equals(err)) {
+          // The test never ran: it needs features the server doesn't declare in its
+          // CapabilityStatement. Like a mode gate, that is neither a pass nor a failure.
+          outcome = OperationOutcomeUtilities.createError("Test '" + suiteName + "/" + testName
+              + "' did not run: " + tester.describeFeatureGate(suite, test));
         } else if ("n/a".equals(err)) {
           // The test never ran: it is gated on a mode that was not asked for. That is neither
           // a pass nor a failure of the server, and reporting it as the bare "n/a" that

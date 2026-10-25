@@ -9,16 +9,17 @@ import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r5.context.CanonicalResourceManager;
-import org.hl7.fhir.r5.context.CanonicalResourceManager.CanonicalResourceProxy;
+import org.hl7.fhir.r5.context.CanonicalResourceProxy;
 import org.hl7.fhir.r5.model.CanonicalResource;
 import org.hl7.fhir.r5.model.CodeSystem;
 import org.hl7.fhir.r5.model.PackageInformation;
 import org.hl7.fhir.r5.model.ValueSet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.hl7.fhir.utilities.npm.NpmPackage;
+import org.hl7.fhir.utilities.npm.PackageGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.mockito.Spy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -1476,4 +1477,74 @@ public class CanonicalResourceManagerTests {
     return cs;
   }
 
+  private PackageInformation packageInfo(String id, String version, String fhirVersion, boolean master, String... dependencies) {
+    PackageGenerator gen = new PackageGenerator().name(id).version(version).fhirVersions(List.of(fhirVersion));
+    for (int i = 0; i < dependencies.length; i += 2) {
+      gen.dependency(dependencies[i], dependencies[i + 1]);
+    }
+    return new PackageInformation(NpmPackage.empty(gen), master);
+  }
+
+  /**
+   * A copy of a manager must resolve unversioned canonicals like the original: the definition of the master package
+   * is preferred over the latest version, and the resources of a package are found by package
+   */
+  @Test
+  public void testCopyKeepsMasterDefinitions() {
+    PackageInformation core = packageInfo("hl7.fhir.r4.core", "4.0.1", "4.0.1", true);
+    PackageInformation xver = packageInfo("hl7.fhir.uv.xver-r5.r4", "0.1.0", "4.0.1", false);
+
+    CodeSystem cs4 = new CodeSystem();
+    cs4.setId("encounter-status-r4");
+    cs4.setUrl("http://hl7.org/fhir/encounter-status");
+    cs4.setVersion("4.0.1");
+    CodeSystem cs5 = new CodeSystem();
+    cs5.setId("encounter-status-r5");
+    cs5.setUrl("http://hl7.org/fhir/encounter-status");
+    cs5.setVersion("5.0.0");
+
+    CanonicalResourceManager<CodeSystem> mrm = new CanonicalResourceManager<>(false, false);
+    mrm.see(cs4, core);
+    mrm.see(cs5, xver);
+
+    // the master definition is preferred over the latest version, unless the referencing package says otherwise
+    Assertions.assertEquals("4.0.1", mrm.get("http://hl7.org/fhir/encounter-status").getVersion());
+    Assertions.assertEquals("4.0.1", mrm.getByPackage("http://hl7.org/fhir/encounter-status", null, List.of()).getVersion());
+    Assertions.assertEquals("5.0.0", mrm.getByPackage("http://hl7.org/fhir/encounter-status", null, List.of(xver.getVID())).getVersion());
+
+    CanonicalResourceManager<CodeSystem> copy = new CanonicalResourceManager<>(false, false);
+    copy.copy(mrm);
+
+    Assertions.assertEquals(2, copy.size());
+    Assertions.assertEquals("4.0.1", copy.get("http://hl7.org/fhir/encounter-status").getVersion());
+    Assertions.assertEquals("4.0.1", copy.getByPackage("http://hl7.org/fhir/encounter-status", null, List.of()).getVersion());
+    Assertions.assertEquals("5.0.0", copy.getByPackage("http://hl7.org/fhir/encounter-status", null, List.of(xver.getVID())).getVersion());
+
+    // dropping by id must still work in the copy
+    copy.drop("encounter-status-r5");
+    Assertions.assertEquals(1, copy.size());
+    Assertions.assertEquals("4.0.1", copy.get("http://hl7.org/fhir/encounter-status").getVersion());
+  }
+
+
+  @Test
+  void droppingOneVersionUpdatesIdIndexAndPreservesOtherVersions() {
+    CanonicalResourceManager<CodeSystem> manager = new CanonicalResourceManager<>(false, false);
+    String url = "http://standardterms.edqm.eu";
+    CodeSystem local = new CodeSystem().setUrl(url).setVersion("1.0");
+    local.setId("edqm");
+    CodeSystem external = new CodeSystem().setUrl(url).setVersion("2.0");
+    external.setId("edqm");
+    manager.see(local, null);
+    manager.see(external, null);
+    var entry = manager.getCachedList().stream().filter(e -> e.getResource() == external).findFirst().orElseThrow();
+    manager.drop(entry);
+    Assertions.assertSame(local, manager.get("edqm"));
+    Assertions.assertSame(local, manager.get(url, "1.0"));
+    Assertions.assertNull(manager.get(url, "2.0"));
+    manager.see(external, null);
+    manager.drop("edqm");
+    Assertions.assertEquals(0, manager.size());
+    Assertions.assertNull(manager.get("edqm"));
+  }
 }

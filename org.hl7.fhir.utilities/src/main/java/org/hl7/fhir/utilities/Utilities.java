@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -487,10 +488,13 @@ public class Utilities {
     while (i < json.length()) {
       if (json.charAt(i) == '\\') {
         i++;
+        if (i == json.length()) {
+          throw new FHIRException("Unterminated JSON escape at the end of the string");
+        }
         char ch = json.charAt(i);
         switch (ch) {
         case '"':
-          b.append('b');
+          b.append('"');
           break;
         case '\\':
           b.append('\\');
@@ -514,8 +518,17 @@ public class Utilities {
           b.append('\t');
           break;
         case 'u':
+          if (i + 5 > json.length()) {
+            throw new FHIRException("Incomplete JSON escape \\" + json.substring(i));
+          }
           String hex = json.substring(i + 1, i + 5);
+          for (char h : hex.toCharArray()) {
+            if (Character.digit(h, 16) < 0) {
+              throw new FHIRException("Invalid JSON escape \\u" + hex);
+            }
+          }
           b.append(Character.toString(Integer.parseInt(hex, 16)));
+          i += 4;
           break;
         default:
           throw new FHIRException("Unknown JSON escape \\" + ch);
@@ -1688,21 +1701,7 @@ public class Utilities {
     if (Utilities.noString(value)) {
       throw new FHIRException("Unable to calculate lowBoundary for a null decimal string");
     }
-    String e = value.contains("e") ? value.substring(value.indexOf("e")+1) : null;
-    if (value.contains("e")) {
-      value = value.substring(0, value.indexOf("e"));
-    }    
-    if (isZero(value)) {
-      return applyPrecision("-0.5000000000000000000000000", precision, true);
-    } else if (value.startsWith("-")) {
-      return "-"+highBoundaryForDecimal(value.substring(1), precision)+(e == null ? "" : e);
-    } else {
-      if (value.contains(".")) {
-        return applyPrecision(minusOne(value)+"50000000000000000000000000000", precision, true)+(e == null ? "" : e);
-      } else {
-        return applyPrecision(minusOne(value)+".50000000000000000000000000000", precision, true)+(e == null ? "" : e);
-      }
-    }
+    return boundaryForDecimal(value, precision, false);
   }
 
   private static String applyPrecision(String v, int p, boolean down) {
@@ -1725,7 +1724,11 @@ public class Utilities {
         ld--;
       }
       if (nv.charAt(ld) >= '5' && !down) {
-        s = nv.substring(0, ld-1)+((char) (nv.charAt(ld-1)+1));
+        s = plusOne(nv.substring(0, ld));
+        if (s.length() > ld && dp > -1) {
+          // the carry added a leading digit (9.96 to 10.0), so the decimal point moves one place right
+          dp++;
+        }
       } else {
         s = nv.substring(0, ld);
       }
@@ -1734,6 +1737,19 @@ public class Utilities {
       s = s.substring(0, s.length()-1);
     }
     return dp == -1 || dp >= s.length() ? s : s.substring(0, dp)+"."+s.substring(dp);
+  }
+
+  private static String plusOne(String digits) {
+    StringBuilder s = new StringBuilder(digits);
+    for (int i = s.length()-1; i >= 0; i--) {
+      if (s.charAt(i) == '9') {
+        s.setCharAt(i, '0');
+      } else {
+        s.setCharAt(i, (char) (s.charAt(i)+1));
+        return s.toString();
+      }
+    }
+    return "1"+s;
   }
 
   private static String minusOne(String value) {
@@ -1754,21 +1770,67 @@ public class Utilities {
     if (Utilities.noString(value)) {
       throw new FHIRException("Unable to calculate highBoundary for a null decimal string");
     }
-    String e = value.contains("e") ? value.substring(value.indexOf("e")+1) : null;
-    if (value.contains("e")) {
-      value = value.substring(0, value.indexOf("e"));
+    return boundaryForDecimal(value, precision, true);
+  }
+
+  /**
+   * The boundary is worked out from the digits as presented, since they carry the precision. If the value has an
+   * exponent (9.5e2), that's done on the mantissa, and then the decimal point is moved, so 9.5e2 has the boundaries
+   * 945 and 955 (to the requested precision). The result never has an exponent.
+   */
+  private static String boundaryForDecimal(String value, int precision, boolean high) {
+    int exponent = 0;
+    int e = Math.max(value.indexOf('e'), value.indexOf('E'));
+    if (e > -1) {
+      exponent = Integer.parseInt(value.substring(e+1));
+      value = value.substring(0, e);
     }
     if (isZero(value)) {
-      return applyPrecision("0.50000000000000000000000000000", precision, false);
+      return high ? applyPrecision("0.50000000000000000000000000000", precision, false) : applyPrecision("-0.5000000000000000000000000", precision, true);
     } else if (value.startsWith("-")) {
-      return "-"+lowBoundaryForDecimal(value.substring(1), precision)+(e == null ? "" : e);
+      // the high boundary of a negative number is the negative of the low boundary of its magnitude, and vice versa
+      return "-"+boundaryForPositiveDecimal(value.substring(1), exponent, precision, !high);
     } else {
-      if (value.contains(".")) {
-        return applyPrecision(value+"50000000000000000000000000000", precision, false)+(e == null ? "" : e);
-      } else {
-        return applyPrecision(value+".50000000000000000000000000000", precision, false)+(e == null ? "" : e);
-      }
+      return boundaryForPositiveDecimal(value, exponent, precision, high);
     }
+  }
+
+  private static String boundaryForPositiveDecimal(String value, int exponent, int precision, boolean high) {
+    String v = value.contains(".") ? value : value+".";
+    String boundary = (high ? v : minusOne(v))+"50000000000000000000000000000";
+    return applyPrecision(stripLeadingZeros(moveDecimalPoint(boundary, exponent)), precision, !high);
+  }
+
+  /**
+   * moves the decimal point (which must be present) by places (right if positive, left if negative). The result always
+   * has at least one digit on each side of the point
+   */
+  private static String moveDecimalPoint(String value, int places) {
+    if (places == 0) {
+      return value;
+    }
+    int dp = value.indexOf('.');
+    String digits = value.substring(0, dp)+value.substring(dp+1);
+    int ndp = dp+places;
+    if (ndp < 1) {
+      digits = padLeft("", '0', 1-ndp)+digits;
+      ndp = 1;
+    }
+    if (ndp >= digits.length()) {
+      digits = digits+padLeft("", '0', ndp+1-digits.length());
+    }
+    return digits.substring(0, ndp)+"."+digits.substring(ndp);
+  }
+
+  /**
+   * minusOne leaves a leading zero behind when it borrows from the first digit (10 to 09)
+   */
+  private static String stripLeadingZeros(String value) {
+    int i = 0;
+    while (i < value.length()-1 && value.charAt(i) == '0' && value.charAt(i+1) != '.') {
+      i++;
+    }
+    return value.substring(i);
   }
 
   private static boolean isZero(String value) {
@@ -1875,6 +1937,79 @@ public class Utilities {
       return "";
     }
     return s.substring(start, end+1);    
+  }
+
+  /**
+   * Decode FHIR base64Binary content.
+   *
+   * FHIR says that base64Binary content does not include whitespace, but that readers should ignore it
+   * (per RFC 4648), and before R5 line-wrapped content was common. So whitespace is always skipped.
+   *
+   * What happens to other characters that are not valid base64 depends on stripInvalid:
+   * <ul>
+   *   <li>false: this is as strict as {@link Base64#getDecoder()}: illegal characters, bad padding and
+   *     content after the padding all throw an IllegalArgumentException with the JDK's message</li>
+   *   <li>true: every character that is not in the base64 alphabet (A-Z, a-z, 0-9, '+', '/') or the
+   *     padding character '=' is skipped, like whitespace. Padding is still checked: bad padding and
+   *     content after the padding still throw, as does content that is the wrong length once the
+   *     invalid characters are gone</li>
+   * </ul>
+   * (Don't use the MIME decoder or commons-codec as a substitute for stripInvalid = true: they skip illegal
+   * characters, but are also lax about padding and trailing content, so they will "decode" any string at all.)
+   *
+   * This costs no more than Base64.getDecoder().decode(String), which copies the string into a byte[]
+   * before decoding anyway; this just makes that copy itself and leaves the skipped characters out. When
+   * there is nothing to skip, it is exactly that call. Note that when characters are skipped, the offset
+   * in a 'incorrect ending byte at n' message is into the content without them.
+   *
+   * @param value the base64 content
+   * @param stripInvalid true to skip all characters that are not valid base64, not just whitespace
+   * @return the decoded bytes
+   * @throws IllegalArgumentException if the content is not valid base64 (after skipping)
+   */
+  public static byte[] decodeBase64(String value, boolean stripInvalid) {
+    int len = value.length();
+    int skip = 0;
+    for (int i = 0; i < len; i++) {
+      if (isSkippedInBase64(value.charAt(i), stripInvalid)) {
+        skip++;
+      }
+    }
+    if (skip == 0) {
+      return Base64.getDecoder().decode(value);
+    }
+    byte[] src = new byte[len - skip];
+    int n = 0;
+    for (int i = 0; i < len; i++) {
+      char ch = value.charAt(i);
+      if (!isSkippedInBase64(ch, stripInvalid)) {
+        // a non-ASCII character is never valid base64. Map it to a character that isn't either, rather
+        // than letting the cast truncate it into one that is (U+0141 would become 'A'). (When stripInvalid
+        // is true, non-ASCII characters have already been skipped)
+        src[n++] = ch < 0x80 ? (byte) ch : (byte) '?';
+      }
+    }
+    return Base64.getDecoder().decode(src);
+  }
+
+  /**
+   * Whether a character is left out of base64 content before it is decoded: always the ASCII whitespace
+   * (space, tab, LF, VT, FF, CR - the same characters that {@link #isWhitespace(int)} accepts below 0x80),
+   * and, if stripInvalid, anything else that isn't in the base64 alphabet or '='.
+   */
+  private static boolean isSkippedInBase64(char ch, boolean stripInvalid) {
+    return stripInvalid ? !isBase64Char(ch) : isBase64Whitespace(ch);
+  }
+
+  private static boolean isBase64Whitespace(char ch) {
+    return ch == ' ' || (ch >= 0x09 && ch <= 0x0D);
+  }
+
+  /**
+   * The base64 alphabet (RFC 4648 table 1, not the URL safe one) plus the padding character
+   */
+  private static boolean isBase64Char(char ch) {
+    return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '+' || ch == '/' || ch == '=';
   }
 
   // from https://en.wikipedia.org/wiki/Whitespace_character#Unicode  

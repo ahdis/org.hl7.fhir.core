@@ -106,10 +106,12 @@ public class CompareUtilities extends BaseTestingUtilities {
       } else if (expected.startsWith("$external:")) {
         @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
         //single literal character split
-        String[] cmd = expected.substring(1, expected.length() - 1).split(":");
+        String[] cmd = expected.substring(1, expected.length() - 1).split(":", 3);
         if (externals != null) {
           String s = externals.asString(cmd[1]);
           return "\""+s+"\" (Ext)";
+        } else if (cmd.length <= 2) {
+          return "Any string (because no external string provided for "+cmd[1]+")";
         } else {
           List<String> fragments = readChoices(cmd[2]);
           return "Contains all of "+fragments.toString()+" (because no external string provided for "+cmd[1]+")";
@@ -228,8 +230,8 @@ public class CompareUtilities extends BaseTestingUtilities {
         if (actualNode == null)
           return "Attributes differ at " + path + ": missing attribute " + expectedNodeName;
         if (!normalise(expectedNode.getTextContent()).equals(normalise(actualNode.getTextContent()))) {
-          byte[] b1 = unBase64(expectedNode.getTextContent());
-          byte[] b2 = unBase64(actualNode.getTextContent());
+          byte[] b1 = unBase64(expectedNode.getTextContent(), true, false);
+          byte[] b2 = unBase64(actualNode.getTextContent(), true, false);
           if (!sameBytes(b1, b2))
             return createNotEqualMessage(id, "Attributes differ at " + path, normalise(expectedNode.getTextContent()).toString(), normalise(actualNode.getTextContent()).toString()) ;
         }
@@ -257,10 +259,6 @@ public class CompareUtilities extends BaseTestingUtilities {
       if (b1[i] != b2[i])
         return false;
     return true;
-  }
-
-  private byte[] unBase64(String text) {
-    return Base64.decodeBase64(text);
   }
 
   private Node skipBlankText(Node node) {
@@ -459,7 +457,7 @@ public class CompareUtilities extends BaseTestingUtilities {
         String expectedJsonString = expectedJsonPrimitive.asString();
         if (!(actualJsonString.contains("<div") && expectedJsonString.contains("<div")))
           if (!matches(actualJsonString, expectedJsonString))
-            if (!sameBytes(unBase64(actualJsonString), unBase64(expectedJsonString)))
+            if (!sameBytes(unBase64(actualJsonString, false, true), unBase64(expectedJsonString, false, true)))
               return createNotEqualMessage(id, "string property values differ at " + path, expectedJsonString, actualJsonString);
       } else if (actualJsonPrimitive.isJsonNumber() && expectedJsonPrimitive.isJsonNumber()) {
         if (!actualJsonPrimitive.asString().equals(expectedJsonPrimitive.asString()))
@@ -690,7 +688,7 @@ public class CompareUtilities extends BaseTestingUtilities {
       } else if (expectedJsonString.startsWith("$external:")) {
         @SuppressWarnings("checkstyle:stringImplicitPatternUsage")
         //single literal character split
-        String[] cmd = expectedJsonString.substring(1, expectedJsonString.length() - 1).split("\\:");
+        String[] cmd = expectedJsonString.substring(1, expectedJsonString.length() - 1).split(":", 3);
         if (externals != null) {
           String s = externals.asString(cmd[1]);
           return actualJsonString.equals(s);

@@ -198,7 +198,7 @@ public class VersionUtilities {
       return "5.0.0";
     }
     if (isR6Ver(v)) {
-      return "6.0.0-ballot3";
+      return "6.0.0-snapshot1";
     }
     return v;
   }
@@ -807,7 +807,6 @@ public class VersionUtilities {
       res.add("CapabilityStatement");
       res.add("ChargeItemDefinition");
       res.add("Citation");
-      res.add("ClinicalUseDefinition");
       res.add("CodeSystem");
       res.add("CompartmentDefinition");
       res.add("ConceptMap");
@@ -844,7 +843,6 @@ public class VersionUtilities {
       res.add("CapabilityStatement");
       res.add("ChargeItemDefinition");
       res.add("Citation");
-      res.add("ClinicalUseDefinition");
       res.add("CodeSystem");
       res.add("CompartmentDefinition");
       res.add("ConceptMap");

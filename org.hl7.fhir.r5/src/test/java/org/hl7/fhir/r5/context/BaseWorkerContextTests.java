@@ -1,8 +1,9 @@
 package org.hl7.fhir.r5.context;
 
 import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r5.context.IWorkerContext.VersionResolutionRules;
 import org.hl7.fhir.r5.model.*;
-import org.hl7.fhir.r5.terminologies.client.ITerminologyClient;
+import org.hl7.fhir.r5.terminologies.client.ITerminologyClient5;
 import org.hl7.fhir.r5.terminologies.client.TerminologyClientContext;
 import org.hl7.fhir.r5.terminologies.expansion.ValueSetExpander;
 import org.hl7.fhir.r5.terminologies.expansion.ValueSetExpansionOutcome;
@@ -23,6 +24,9 @@ import org.hl7.fhir.utilities.validation.ValidationMessage;
 import org.hl7.fhir.utilities.validation.ValidationOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatcher;
@@ -148,7 +152,7 @@ public class BaseWorkerContextTests {
   ToolingClientLogger txLog;
 
   @Mock
-  ITerminologyClient terminologyClient;
+  ITerminologyClient5 terminologyClient;
 
   @Mock
   TerminologyCache.CacheToken cacheToken;
@@ -406,7 +410,7 @@ public class BaseWorkerContextTests {
     ValidationOptions validationOptions = new ValidationOptions(FhirPublication.R5).withGuessSystem().withVersionFlexible(false);
     ValueSet valueSet = new ValueSet();
     Coding coding = new Coding();
-    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters);
+    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters, "Coding");
     Mockito.doReturn(cachedValidationResult).when(terminologyCache).getValidation(cacheToken);
 
     ValidationContextCarrier ctxt = mock(ValidationContextCarrier.class);
@@ -426,7 +430,7 @@ public class BaseWorkerContextTests {
     ValueSet valueSet = new ValueSet();
     valueSet.setUrl(UUIDUtilities.makeUuidUrn());
     Coding coding = new Coding();
-    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters);
+    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters, "Coding");
 
     Mockito.doReturn(valueSetCheckerSimple).when(context).constructValueSetCheckerSimple(any(), any(), any());
     Mockito.doReturn(createdValidationResult).when(valueSetCheckerSimple).validateCode(eq("Coding"), any(Coding.class));
@@ -449,7 +453,7 @@ public class BaseWorkerContextTests {
     ValidationOptions validationOptions = new ValidationOptions(FhirPublication.R5).withGuessSystem().withVersionFlexible(false).withNoClient();
     ValueSet valueSet = new ValueSet();
     Coding coding = new Coding();
-    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters);
+    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters, "Coding");
     Mockito.doReturn(pIn).when(context).constructParameters(validationOptions, coding);
 
     TerminologyClientContext terminologyClientContext = context.getTxClientManager().getMaster();
@@ -798,5 +802,33 @@ public class BaseWorkerContextTests {
     });
     assertThat(exceptions).isEmpty();
     assertThat(successCount.get()).isEqualTo(numberOfThreads);
+  }
+
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(strings = "1.0")
+  void externalLookupPreservesOptionalVersion(String version) {
+    assertExternalLookupVersion(version, false);
+  }
+
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(strings = "1.0")
+  void externalLookupWithSourcePreservesOptionalVersion(String version) {
+    assertExternalLookupVersion(version, true);
+  }
+
+  private void assertExternalLookupVersion(String version, boolean withSource) {
+    String url = "http://example.org/CodeSystem/versioned";
+    String canonical = version == null ? url : url + "|" + version;
+    CodeSystem cs = new CodeSystem().setUrl(url).setVersion(version);
+    Mockito.when(terminologyCache.hasCodeSystem(canonical)).thenReturn(true);
+    Mockito.when(terminologyCache.getCodeSystem(canonical))
+        .thenReturn(new TerminologyCache.SourcedCodeSystem("https://tx.example.org/r4", cs));
+    CodeSystem result = withSource
+        ? context.findTxResource(CodeSystem.class, url, VersionResolutionRules.defaultRule(), version, new ValueSet())
+        : context.findTxResource(CodeSystem.class, url, VersionResolutionRules.defaultRule(), version);
+    assertSame(cs, result);
+    Mockito.verify(terminologyCache).getCodeSystem(canonical);
   }
 }

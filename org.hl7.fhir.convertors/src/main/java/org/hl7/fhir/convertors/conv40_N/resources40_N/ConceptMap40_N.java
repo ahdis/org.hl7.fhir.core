@@ -52,6 +52,16 @@ import org.hl7.fhir.utilities.CanonicalPair;
 
 public class ConceptMap40_N {
 
+  // ConceptMap.group.unmapped.valueSet and .relationship are R5+; R4/R4B have no
+  // equivalent, so they travel as cross-version extensions and the round trip is lossless.
+  public static final String UNMAPPED_VALUESET_EXTENSION_URL = "http://hl7.org/fhir/5.0/StructureDefinition/extension-ConceptMap.group.unmapped.valueSet";
+  public static final String UNMAPPED_RELATIONSHIP_EXTENSION_URL = "http://hl7.org/fhir/5.0/StructureDefinition/extension-ConceptMap.group.unmapped.relationship";
+
+  private static final String[] UNMAPPED_IGNORED_EXTENSION_URLS = new String[]{
+    UNMAPPED_VALUESET_EXTENSION_URL,
+    UNMAPPED_RELATIONSHIP_EXTENSION_URL
+  };
+
   public static org.hl7.fhir.model.core.ConceptMap convertConceptMap(org.hl7.fhir.r4.model.ConceptMap src) throws FHIRException {
     if (src == null)
       return null;
@@ -324,7 +334,9 @@ public class ConceptMap40_N {
           return null;
       Enumeration<ConceptMapRelationship> tgt = new Enumeration<ConceptMapRelationship>(new Enumerations.ConceptMapRelationshipEnumFactory());
       ConversionContext40_N.INSTANCE.getVersionConvertor_40_N().copyElement(src, tgt);
-    org.hl7.fhir.model.extensions.ExtensionUtilities.setCodeExtensionMod(tgtCtxt, VersionConvertorConstants.EXT_OLD_CONCEPTMAP_EQUIVALENCE, src.getValueAsString());
+    if (src.getValueAsString() != null && !VersionConvertorConstants.CONCEPTMAP_EQUIVALENCES_KEPT_BY_RELATIONSHIP.contains(src.getValueAsString())) {
+      org.hl7.fhir.model.extensions.ExtensionUtilities.setCodeExtensionMod(tgtCtxt, VersionConvertorConstants.EXT_OLD_CONCEPTMAP_EQUIVALENCE, src.getValueAsString());
+    }
       if (src.getValue() == null) {
           tgt.setValue(null);
       } else {
@@ -405,7 +417,7 @@ public class ConceptMap40_N {
     if (src == null)
       return null;
     org.hl7.fhir.model.core.ConceptMap.ConceptMapGroupUnmappedComponent tgt = new org.hl7.fhir.model.core.ConceptMap.ConceptMapGroupUnmappedComponent();
-    ConversionContext40_N.INSTANCE.getVersionConvertor_40_N().copyBackboneElement(src, tgt);
+    ConversionContext40_N.INSTANCE.getVersionConvertor_40_N().copyBackboneElement(src, tgt, UNMAPPED_IGNORED_EXTENSION_URLS);
     if (src.hasMode())
       tgt.setModeElement(convertConceptMapGroupUnmappedMode(src.getModeElement()));
     if (src.hasCode())
@@ -414,6 +426,10 @@ public class ConceptMap40_N {
       tgt.setDisplayElement(String40_N.convertString(src.getDisplayElement()));
     if (src.hasUrl())
       tgt.setOtherMapElement(Canonical40_N.convertCanonical(src.getUrlElement()));
+    if (src.hasExtension(UNMAPPED_VALUESET_EXTENSION_URL))
+      tgt.setValueSetElement(Canonical40_N.convertCanonical((org.hl7.fhir.r4.model.CanonicalType) src.getExtensionByUrl(UNMAPPED_VALUESET_EXTENSION_URL).getValue()));
+    if (src.hasExtension(UNMAPPED_RELATIONSHIP_EXTENSION_URL))
+      tgt.setRelationship(ConceptMapRelationship.fromCode(src.getExtensionByUrl(UNMAPPED_RELATIONSHIP_EXTENSION_URL).getValue().primitiveValue()));
     return tgt;
   }
 
@@ -421,7 +437,7 @@ public class ConceptMap40_N {
     if (src == null)
       return null;
     org.hl7.fhir.r4.model.ConceptMap.ConceptMapGroupUnmappedComponent tgt = new org.hl7.fhir.r4.model.ConceptMap.ConceptMapGroupUnmappedComponent();
-    ConversionContext40_N.INSTANCE.getVersionConvertor_40_N().copyBackboneElement(src, tgt);
+    ConversionContext40_N.INSTANCE.getVersionConvertor_40_N().copyBackboneElement(src, tgt, UNMAPPED_IGNORED_EXTENSION_URLS);
     if (src.hasMode())
       tgt.setModeElement(convertConceptMapGroupUnmappedMode(src.getModeElement()));
     if (src.hasCode())
@@ -430,6 +446,10 @@ public class ConceptMap40_N {
       tgt.setDisplayElement(String40_N.convertString(src.getDisplayElement()));
     if (src.hasOtherMap())
       tgt.setUrlElement(Canonical40_N.convertCanonical(src.getOtherMapElement()));
+    if (src.hasValueSet())
+      tgt.addExtension(UNMAPPED_VALUESET_EXTENSION_URL, Canonical40_N.convertCanonical(src.getValueSetElement()));
+    if (src.hasRelationship())
+      tgt.addExtension(UNMAPPED_RELATIONSHIP_EXTENSION_URL, new org.hl7.fhir.r4.model.CodeType(src.getRelationship().toCode()));
     return tgt;
   }
 

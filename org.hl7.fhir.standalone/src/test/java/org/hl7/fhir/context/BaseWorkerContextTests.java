@@ -1,9 +1,12 @@
 package org.hl7.fhir.context;
 
 import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.services.client.ITerminologyClientN;
+import org.hl7.fhir.model.ModelContext;
 import org.hl7.fhir.model.core.*;
-import org.hl7.fhir.services.context.IContextResourceLoader;
+import org.hl7.fhir.services.context.IContextResourceLoaderN;
 import org.hl7.fhir.services.terminology.*;
+import org.hl7.fhir.services.validation.IResourceValidator;
 import org.hl7.fhir.standalone.context.BaseWorkerContext;
 import org.hl7.fhir.standalone.terminology.expansion.ValueSetExpander;
 import org.hl7.fhir.standalone.terminology.utilities.TerminologyCache;
@@ -21,6 +24,9 @@ import org.hl7.fhir.utilities.validation.ValidationOptions;
 import org.hl7.fhir.standalone.terminology.client.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
@@ -46,7 +52,7 @@ public class BaseWorkerContextTests {
   private static final String DUMMY_URL = "http://dummyUrl";
 
   @Spy
-  BaseWorkerContext context = new BaseWorkerContext() {
+  BaseWorkerContext context = new BaseWorkerContext(ModelContext.fullCoreContext()) {
     @Override
     public String getFHIRVersion() {
       return "4.0.1";
@@ -69,6 +75,10 @@ public class BaseWorkerContextTests {
     }
 
     @Override
+    public IResourceValidator newValidator() throws FHIRException {
+      return null;
+    }
+    @Override
     public PackageLoadController getPackageLoadController() {
       return null;
     }
@@ -89,7 +99,7 @@ public class BaseWorkerContextTests {
     }
 
     @Override
-    public int loadFromPackage(NpmPackage pi, IContextResourceLoader loader, boolean isMaster) throws FileNotFoundException, IOException, FHIRException {
+    public int loadFromPackage(NpmPackage pi, IContextResourceLoaderN loader, boolean isMaster) throws FileNotFoundException, IOException, FHIRException {
       return 0;
     }
 
@@ -104,7 +114,7 @@ public class BaseWorkerContextTests {
     }
 
     @Override
-    public int loadFromPackageAndDependencies(NpmPackage pi, IContextResourceLoader loader, BasePackageCacheManager pcm) throws FileNotFoundException, IOException, FHIRException {
+    public int loadFromPackageAndDependencies(NpmPackage pi, IContextResourceLoaderN loader, BasePackageCacheManager pcm) throws FileNotFoundException, IOException, FHIRException {
       return 0;
     }
 
@@ -141,7 +151,7 @@ public class BaseWorkerContextTests {
   ToolingClientLogger txLog;
 
   @Mock
-  ITerminologyClient terminologyClient;
+  ITerminologyClientN terminologyClient;
 
   @Mock
   CacheToken cacheToken;
@@ -267,7 +277,7 @@ public class BaseWorkerContextTests {
   }
 
   private BaseWorkerContext getBaseWorkerContext() throws IOException {
-    BaseWorkerContext baseWorkerContext = new BaseWorkerContext() {
+    BaseWorkerContext baseWorkerContext = new BaseWorkerContext(ModelContext.fullCoreContext()) {
       @Override
       public String getFHIRVersion() {
         return null;
@@ -289,6 +299,10 @@ public class BaseWorkerContextTests {
       }
 
       @Override
+      public IResourceValidator newValidator() throws FHIRException {
+        return null;
+      }
+      @Override
       public PackageLoadController getPackageLoadController() {
         return null;
       }
@@ -309,7 +323,7 @@ public class BaseWorkerContextTests {
       }
 
       @Override
-      public int loadFromPackage(NpmPackage pi, IContextResourceLoader loader, boolean isMaster) throws FileNotFoundException, IOException, FHIRException {
+      public int loadFromPackage(NpmPackage pi, IContextResourceLoaderN loader, boolean isMaster) throws FileNotFoundException, IOException, FHIRException {
         return 0;
       }
 
@@ -324,7 +338,7 @@ public class BaseWorkerContextTests {
       }
 
       @Override
-      public int loadFromPackageAndDependencies(NpmPackage pi, IContextResourceLoader loader, BasePackageCacheManager pcm) throws FileNotFoundException, IOException, FHIRException {
+      public int loadFromPackageAndDependencies(NpmPackage pi, IContextResourceLoaderN loader, BasePackageCacheManager pcm) throws FileNotFoundException, IOException, FHIRException {
         return 0;
       }
 
@@ -394,7 +408,7 @@ public class BaseWorkerContextTests {
     ValidationOptions validationOptions = new ValidationOptions(FhirPublication.R5).withGuessSystem().withVersionFlexible(false);
     ValueSet valueSet = new ValueSet();
     Coding coding = new Coding();
-    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters);
+    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters, "Coding");
     Mockito.doReturn(cachedValidationResult).when(terminologyCache).getValidation(cacheToken);
 
     ValidationContextCarrier ctxt = mock(ValidationContextCarrier.class);
@@ -414,7 +428,7 @@ public class BaseWorkerContextTests {
     ValueSet valueSet = new ValueSet();
     valueSet.setUrl(UUIDUtilities.makeUuidUrn());
     Coding coding = new Coding();
-    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters);
+    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters, "Coding");
 
     Mockito.doReturn(valueSetCheckerSimple).when(context).constructValueSetCheckerSimple(any(), any(), any());
     Mockito.doReturn(createdValidationResult).when(valueSetCheckerSimple).validateCode(eq("Coding"), any(Coding.class));
@@ -437,7 +451,7 @@ public class BaseWorkerContextTests {
     ValidationOptions validationOptions = new ValidationOptions(FhirPublication.R5).withGuessSystem().withVersionFlexible(false).withNoClient();
     ValueSet valueSet = new ValueSet();
     Coding coding = new Coding();
-    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters);
+    Mockito.doReturn(cacheToken).when(terminologyCache).generateValidationToken(validationOptions, coding, valueSet, expParameters, "Coding");
     Mockito.doReturn(pIn).when(context).constructParameters(validationOptions, coding);
 
     TerminologyClientContext terminologyClientContext = context.getTxClientManager().getMaster();
@@ -786,5 +800,33 @@ public class BaseWorkerContextTests {
     });
     assertThat(exceptions).isEmpty();
     assertThat(successCount.get()).isEqualTo(numberOfThreads);
+  }
+
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(strings = "1.0")
+  void externalLookupPreservesOptionalVersion(String version) {
+    assertExternalLookupVersion(version, false);
+  }
+
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(strings = "1.0")
+  void externalLookupWithSourcePreservesOptionalVersion(String version) {
+    assertExternalLookupVersion(version, true);
+  }
+
+  private void assertExternalLookupVersion(String version, boolean withSource) {
+    String url = "http://example.org/CodeSystem/versioned";
+    String canonical = version == null ? url : url + "|" + version;
+    CodeSystem cs = new CodeSystem().setUrl(url).setVersion(version);
+    Mockito.when(terminologyCache.hasCodeSystem(canonical)).thenReturn(true);
+    Mockito.when(terminologyCache.getCodeSystem(canonical))
+        .thenReturn(new TerminologyCache.SourcedCodeSystem("https://tx.example.org/r4", cs));
+    CodeSystem result = withSource
+        ? context.findTxResource(CodeSystem.class, url, VersionResolutionRules.defaultRule(), version, new ValueSet())
+        : context.findTxResource(CodeSystem.class, url, VersionResolutionRules.defaultRule(), version);
+    assertSame(cs, result);
+    Mockito.verify(terminologyCache).getCodeSystem(canonical);
   }
 }
